@@ -20,6 +20,8 @@ dist-ssr
 public/textures/*
 !public/textures/.gitkeep
 !public/textures/manifest.json
+!public/textures/*-low.jpg
+!public/textures/*-low.png
 
 # Generated OpenGraph placeholder
 public/og.png
