@@ -48,6 +48,7 @@ export function BadgeRail() {
           <button
             key={b.accent}
             onClick={() => openInfo('vehicle')}
+            title={`View ${b.prefix.replace(' · ', '')} details`}
             className="flex shrink-0 items-center gap-1.5 rounded border bg-black/50 px-2 py-1 text-[9px] uppercase tracking-[.2em] transition-colors"
             style={{ borderColor: hot ? VAR[b.color] : 'rgba(255,255,255,0.1)' }}
           >

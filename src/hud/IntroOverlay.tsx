@@ -47,6 +47,7 @@ export function IntroOverlay() {
         </p>
         <button
           onClick={dismiss}
+          title="Enter the simulation and load UI HUD overlays"
           className="mt-2 rounded border border-laser/70 px-6 py-2.5 text-[10px] uppercase tracking-[.26em] text-laser transition-colors hover:bg-laser/15"
         >
           Initiate Deployment

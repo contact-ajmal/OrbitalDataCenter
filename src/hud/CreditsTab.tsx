@@ -16,6 +16,7 @@ export function CreditsTab() {
             href={l.href}
             target="_blank"
             rel="noreferrer noopener"
+            title={`Open developer's ${l.label} (opens in a new tab)`}
             className="inline-flex items-center gap-1 rounded border border-laser/50 px-3 py-1.5 text-[9px] uppercase tracking-[.18em] text-laser transition-colors hover:bg-laser/15"
           >
             ↗ {l.label}

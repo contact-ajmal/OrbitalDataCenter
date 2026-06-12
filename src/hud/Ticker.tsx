@@ -38,6 +38,7 @@ export function Ticker() {
       {/* persistent author mark (opens the Credits tab) */}
       <button
         onClick={() => openInfo('credits')}
+        title="Open simulation credits and details"
         className="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 px-2 font-mono text-[8px] tracking-[.1em] text-faint hover:text-dim"
       >
         SIM BY {CREDITS.author.toUpperCase()} · {CREDITS.year}

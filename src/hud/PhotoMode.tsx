@@ -41,6 +41,7 @@ export function PhotoMode() {
       <div className="pointer-events-auto absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-md border border-white/10 bg-black/60 px-3 py-2 backdrop-blur-md">
         <button
           onClick={() => setGrid((g) => !g)}
+          title="Toggle rule-of-thirds photography composition grid"
           className={
             'rounded border px-2.5 py-1 text-[9px] uppercase tracking-[.16em] transition-colors ' +
             (grid ? 'border-laser bg-laser/20 text-laser' : 'border-white/15 text-dim hover:text-ink')
@@ -50,6 +51,7 @@ export function PhotoMode() {
         </button>
         <button
           onClick={() => setLetterbox((l) => !l)}
+          title="Toggle cinematic 2.39:1 aspect ratio bars"
           className={
             'rounded border px-2.5 py-1 text-[9px] uppercase tracking-[.16em] transition-colors ' +
             (letterbox ? 'border-laser bg-laser/20 text-laser' : 'border-white/15 text-dim hover:text-ink')
@@ -59,12 +61,14 @@ export function PhotoMode() {
         </button>
         <button
           onClick={() => emit('snapshot', Date.now())}
+          title="Capture high-resolution PNG snapshot of the viewport"
           className="rounded border border-laser/70 px-3 py-1 text-[9px] uppercase tracking-[.18em] text-laser hover:bg-laser/15"
         >
           Capture
         </button>
         <button
           onClick={() => setPhotoMode(false)}
+          title="Exit photo mode and restore UI overlays"
           className="rounded border border-white/20 px-2.5 py-1 text-[9px] uppercase tracking-[.16em] text-dim hover:text-ink"
         >
           Exit

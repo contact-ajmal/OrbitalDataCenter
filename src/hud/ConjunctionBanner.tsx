@@ -51,6 +51,7 @@ export function ConjunctionBanner() {
               setChaseIdx(conjunction.satIdx);
               setViewMode('chase');
             }}
+            title="Focus camera and follow the endangered satellite"
             className="pointer-events-auto rounded border border-solar/60 px-2 py-0.5 text-[8px] uppercase tracking-[.16em] text-solar hover:bg-solar/15"
           >
             Watch

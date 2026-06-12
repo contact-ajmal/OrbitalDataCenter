@@ -153,6 +153,7 @@ export function InfoModal() {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
+                title={`Switch to the ${t.label} tab`}
                 className={
                   'text-[10px] uppercase tracking-[.2em] transition-colors ' +
                   (t.key === tab ? 'text-laser' : 'text-dim hover:text-ink')
@@ -164,6 +165,7 @@ export function InfoModal() {
           </div>
           <button
             onClick={close}
+            title="Close info panel (Esc)"
             className="mb-1 ml-2 text-[15px] leading-none text-dim hover:text-ink"
           >
             ✕

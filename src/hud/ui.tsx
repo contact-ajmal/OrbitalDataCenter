@@ -125,7 +125,7 @@ export function Seg<T extends string>({
   onChange,
   accent = 'var(--color-laser)',
 }: {
-  options: { label: string; value: T }[];
+  options: { label: string; value: T; title?: string }[];
   value: T;
   onChange: (v: T) => void;
   accent?: string;
@@ -138,6 +138,7 @@ export function Seg<T extends string>({
           <button
             key={o.value}
             onClick={() => onChange(o.value)}
+            title={o.title}
             className={
               'px-2.5 py-1 text-[9px] uppercase tracking-[.18em] transition-colors ' +
               (active ? 'text-black' : 'text-dim hover:text-ink')

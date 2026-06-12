@@ -87,7 +87,7 @@ export function RoadmapBar() {
         <button
           onClick={togglePlay}
           className="pointer-events-auto flex h-6 w-6 items-center justify-center rounded border border-laser/50 text-[11px] text-laser hover:bg-laser/15"
-          title="Play timeline"
+          title={playing ? 'Pause roadmap timeline animation' : 'Play roadmap timeline animation'}
         >
           {playing ? '⏸' : '▶'}
         </button>

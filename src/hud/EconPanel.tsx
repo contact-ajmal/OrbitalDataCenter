@@ -38,6 +38,7 @@ function Stepper({
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => onChange(clamp(value - step))}
+          title={`Decrease ${label}`}
           className="pointer-events-auto h-4 w-4 rounded border border-white/15 text-[10px] leading-none text-dim hover:text-ink"
         >
           −
@@ -47,6 +48,7 @@ function Stepper({
         </span>
         <button
           onClick={() => onChange(clamp(value + step))}
+          title={`Increase ${label}`}
           className="pointer-events-auto h-4 w-4 rounded border border-white/15 text-[10px] leading-none text-dim hover:text-ink"
         >
           +

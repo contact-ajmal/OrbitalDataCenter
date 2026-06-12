@@ -133,6 +133,7 @@ export function SatCard() {
         <span className="font-mono text-[12px] tracking-[.12em] text-laser">{id}</span>
         <button
           onClick={() => setSelectedIdx(-1)}
+          title="Deselect satellite"
           className="pointer-events-auto text-[12px] leading-none text-dim hover:text-ink"
         >
           ✕
@@ -174,6 +175,7 @@ export function SatCard() {
           setChaseIdx(i);
           setViewMode('chase');
         }}
+        title="Follow this satellite in orbit (Chase View)"
         className="pointer-events-auto mt-3 w-full rounded border border-laser/60 py-1.5 text-[9px] uppercase tracking-[.2em] text-laser transition-colors hover:bg-laser/15"
       >
         ◉ Track This Satellite

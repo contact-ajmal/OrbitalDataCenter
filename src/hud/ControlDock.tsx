@@ -117,6 +117,15 @@ export function ControlDock() {
             <button
               key={k}
               onClick={() => toggle(k)}
+              title={
+                k === 'lasers'
+                  ? 'Toggle inter-satellite laser communication links'
+                  : k === 'downlink'
+                    ? 'Toggle ground-station data transmission beams'
+                    : k === 'orbits'
+                      ? 'Toggle orbital plane rings'
+                      : 'Toggle background Starlink constellation overlay'
+              }
               className={
                 'pointer-events-auto rounded border px-2 py-1 text-[9px] uppercase tracking-[.16em] transition-colors ' +
                 (toggles[k]
@@ -136,9 +145,9 @@ export function ControlDock() {
           value={viewMode === 'launch' ? 'overview' : viewMode}
           onChange={setViewMode}
           options={[
-            { label: 'Overview', value: 'overview' },
-            { label: 'Chase', value: 'chase' },
-            { label: 'Inspect', value: 'inspect' },
+            { label: 'Overview', value: 'overview', title: 'Global constellation overview' },
+            { label: 'Chase', value: 'chase', title: 'Follow selected satellite in orbit' },
+            { label: 'Inspect', value: 'inspect', title: 'Detailed interactive satellite model inspector' },
           ]}
         />
       </div>
@@ -147,6 +156,7 @@ export function ControlDock() {
         <button
           onClick={() => emit('job:run', 1)}
           disabled={jobBusy}
+          title="Route a geographic compute packet across the live laser network"
           className={
             'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors ' +
             (jobBusy
@@ -163,6 +173,7 @@ export function ControlDock() {
             startTraining();
           }}
           disabled={jobBusy}
+          title="Simulate federated model training across the satellite constellation"
           className={
             'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors ' +
             (jobBusy
@@ -174,12 +185,14 @@ export function ControlDock() {
         </button>
         <button
           onClick={() => emit('launch:request', 60)}
+          title="Launch a Starship and deploy 60 new satellites into orbit"
           className="pointer-events-auto rounded border border-white/60 px-3 py-1.5 text-[9px] uppercase tracking-[.18em] text-ink transition-colors hover:bg-white/10"
         >
           Launch +60
         </button>
         <button
           onClick={() => setVisionOn(!visionOn)}
+          title="Toggle point-cloud representation of the 1,000,000 satellite fleet"
           className={
             'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors ' +
             (visionOn
