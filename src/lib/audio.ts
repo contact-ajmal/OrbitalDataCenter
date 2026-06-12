@@ -55,37 +55,105 @@ function noiseBuffer(c: AudioContext, brown = false): AudioBufferSourceNode {
 
 function startAmbient() {
   if (ambient || !ctx || !master) return;
-  const o1 = ctx.createOscillator();
-  o1.type = 'sine';
-  o1.frequency.value = 55;
-  const o2 = ctx.createOscillator();
-  o2.type = 'sine';
-  o2.frequency.value = 55.5;
-  const g = ctx.createGain();
-  g.gain.value = 0.1;
-  o1.connect(g);
-  o2.connect(g);
-  const noise = noiseBuffer(ctx);
-  const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass';
-  lp.frequency.value = 480;
-  const ng = ctx.createGain();
-  ng.gain.value = 0.016; // ≈ −36 dB
-  noise.connect(lp);
-  lp.connect(ng);
-  g.connect(master);
-  ng.connect(master);
-  o1.start();
-  o2.start();
+  const c = ctx;
+
+  // Background hum
+  const noise = noiseBuffer(c);
+  const humFilter = c.createBiquadFilter();
+  humFilter.type = 'lowpass';
+  humFilter.frequency.value = 280; // deep space rumble
+  const humGain = c.createGain();
+  humGain.gain.value = 0.012; // soft rumble
+  noise.connect(humFilter);
+  humFilter.connect(humGain);
+  humGain.connect(master);
   noise.start();
+
+  // Create a filter for the synth pad to make it warm and soft
+  const padFilter = c.createBiquadFilter();
+  padFilter.type = 'lowpass';
+  padFilter.frequency.value = 350; // soft and warm
+  padFilter.connect(master);
+
+  // Slowly modulate filter cutoff with an LFO for movement
+  const lfo = c.createOscillator();
+  lfo.frequency.value = 0.04; // slow 25s sweep
+  const lfoGain = c.createGain();
+  lfoGain.gain.value = 120; // sweep between 230Hz and 470Hz
+  lfo.connect(lfoGain);
+  lfoGain.connect(padFilter.frequency);
+  lfo.start();
+
+  let activeNotes: { osc: OscillatorNode; gain: GainNode }[] = [];
+
+  const chords = [
+    // Cmaj9: C3, G3, B3, D4, E4
+    [130.81, 196.00, 246.94, 293.66, 329.63],
+    // Fmaj9: F2, C3, A3, E4, G4
+    [87.31, 130.81, 220.00, 329.63, 392.00],
+    // Am9: A2, E3, G3, C4, B4
+    [110.00, 164.81, 196.00, 261.63, 493.88],
+    // G6/9: G2, D3, B3, E4, A4
+    [98.00, 146.83, 246.94, 329.63, 440.00]
+  ];
+  let currentChordIdx = 0;
+
+  const playChord = () => {
+    const now = c.currentTime;
+    const notes = chords[currentChordIdx]!;
+    currentChordIdx = (currentChordIdx + 1) % chords.length;
+
+    // Cross-fade: slowly fade out old notes
+    const oldNotes = activeNotes;
+    activeNotes = [];
+    oldNotes.forEach(({ osc, gain }) => {
+      try {
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setValueAtTime(gain.gain.value, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 4);
+        osc.stop(now + 4.1);
+      } catch {
+        /* ignore */
+      }
+    });
+
+    // Fade in new notes
+    notes.forEach((freq, i) => {
+      const osc = c.createOscillator();
+      osc.type = 'triangle'; // triangle is much warmer and softer
+      osc.frequency.value = freq + (Math.random() - 0.5) * 0.4; // organic detune
+      
+      const gain = c.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      const noteVol = 0.035 - (i * 0.003); // higher notes are slightly quieter
+      gain.gain.exponentialRampToValueAtTime(noteVol, now + 3.5 + i * 0.3); // staggered swells
+
+      osc.connect(gain);
+      gain.connect(padFilter);
+      osc.start(now);
+      activeNotes.push({ osc, gain });
+    });
+  };
+
+  playChord();
+
+  const interval = setInterval(playChord, 12000); // evolve chord every 12 seconds
+
   ambient = () => {
+    clearInterval(interval);
     try {
-      o1.stop();
-      o2.stop();
       noise.stop();
+      lfo.stop();
     } catch {
       /* ignore */
     }
+    activeNotes.forEach(({ osc }) => {
+      try {
+        osc.stop();
+      } catch {
+        /* ignore */
+      }
+    });
   };
 }
 
@@ -255,6 +323,10 @@ export function disableAudio() {
     const now = ctx.currentTime;
     master.gain.cancelScheduledValues(now);
     master.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+  }
+  if (ambient) {
+    ambient();
+    ambient = null;
   }
   stopStorm();
   stopLaunch();
