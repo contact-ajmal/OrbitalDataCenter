@@ -55,10 +55,17 @@ export const useSimStore = create<SimState>((set) => ({
   paused: false,
   thermal: false,
   photoMode: false,
-  lowGraphics: typeof window !== 'undefined' && (
-    localStorage.getItem('ai1-low-graphics') === 'true' ||
-    (localStorage.getItem('ai1-low-graphics') === null && window.innerWidth < 900)
-  ),
+  lowGraphics: (() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const saved = localStorage.getItem('ai1-low-graphics');
+      if (saved === 'true') return true;
+      if (saved === 'false') return false;
+      return window.innerWidth < 900;
+    } catch {
+      return window.innerWidth < 900;
+    }
+  })(),
 
   setSatCount: (satCount) => set({ satCount }),
   setTimeWarp: (timeWarp) => set({ timeWarp }),
@@ -76,7 +83,11 @@ export const useSimStore = create<SimState>((set) => ({
     set((s) => {
       const next = !s.lowGraphics;
       if (typeof window !== 'undefined') {
-        localStorage.setItem('ai1-low-graphics', String(next));
+        try {
+          localStorage.setItem('ai1-low-graphics', String(next));
+        } catch {
+          /* ignore */
+        }
       }
       return { lowGraphics: next };
     }),
