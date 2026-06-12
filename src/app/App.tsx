@@ -39,7 +39,7 @@ export function App() {
         camera={{ position: [0, SCENE.EARTH_R * 0.6, SCENE.EARTH_R * 3], fov: 35, far: 8000 }}
         gl={{
           antialias: true,
-          powerPreference: 'high-performance',
+          powerPreference: lowGraphics ? 'low-power' : 'default',
           toneMapping: NoToneMapping, // tonemapping handled by the Post stack when active
           preserveDrawingBuffer: true, // required for toDataURL snapshots
         }}
