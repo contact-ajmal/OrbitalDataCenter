@@ -55,7 +55,10 @@ export const useSimStore = create<SimState>((set) => ({
   paused: false,
   thermal: false,
   photoMode: false,
-  lowGraphics: typeof window !== 'undefined' && localStorage.getItem('ai1-low-graphics') === 'true',
+  lowGraphics: typeof window !== 'undefined' && (
+    localStorage.getItem('ai1-low-graphics') === 'true' ||
+    (localStorage.getItem('ai1-low-graphics') === null && window.innerWidth < 900)
+  ),
 
   setSatCount: (satCount) => set({ satCount }),
   setTimeWarp: (timeWarp) => set({ timeWarp }),
