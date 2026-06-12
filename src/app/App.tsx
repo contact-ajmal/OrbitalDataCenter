@@ -6,8 +6,11 @@ import { Scene } from '../scene/Scene';
 import { Post } from '../scene/Post';
 import { Hud } from '../hud';
 import { audioPreference, enableAudio, isAudioOn } from '../lib/audio';
+import { useSimStore } from '../state/sim';
 
 export function App() {
+  const lowGraphics = useSimStore((s) => s.lowGraphics);
+
   // Pause the render loop while the tab is hidden (perf).
   const [frameloop, setFrameloop] = useState<'always' | 'never'>('always');
   useEffect(() => {
@@ -32,12 +35,12 @@ export function App() {
     <>
       <Canvas
         frameloop={frameloop}
-        dpr={[1, 2]}
+        dpr={lowGraphics ? 1 : [1, 2]}
         camera={{ position: [0, SCENE.EARTH_R * 0.6, SCENE.EARTH_R * 3], fov: 35, far: 8000 }}
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
-          toneMapping: NoToneMapping, // tonemapping handled by the Post stack
+          toneMapping: NoToneMapping, // tonemapping handled by the Post stack when active
           preserveDrawingBuffer: true, // required for toDataURL snapshots
         }}
       >
@@ -45,7 +48,7 @@ export function App() {
         <Suspense fallback={null}>
           <Scene />
         </Suspense>
-        <Post />
+        {!lowGraphics && <Post />}
       </Canvas>
       <Hud />
     </>

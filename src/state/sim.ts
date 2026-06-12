@@ -25,6 +25,7 @@ type SimState = {
   paused: boolean;
   thermal: boolean;
   photoMode: boolean;
+  lowGraphics: boolean;
 
   setSatCount: (n: number) => void;
   setTimeWarp: (n: number) => void;
@@ -37,6 +38,7 @@ type SimState = {
   togglePaused: () => void;
   toggleThermal: () => void;
   setPhotoMode: (v: boolean) => void;
+  toggleLowGraphics: () => void;
   /** Select a satellite AND fly to it: sets selectedIdx + chaseIdx + inspect. */
   selectSat: (i: number) => void;
 };
@@ -53,6 +55,7 @@ export const useSimStore = create<SimState>((set) => ({
   paused: false,
   thermal: false,
   photoMode: false,
+  lowGraphics: typeof window !== 'undefined' && localStorage.getItem('ai1-low-graphics') === 'true',
 
   setSatCount: (satCount) => set({ satCount }),
   setTimeWarp: (timeWarp) => set({ timeWarp }),
@@ -66,5 +69,13 @@ export const useSimStore = create<SimState>((set) => ({
   togglePaused: () => set((s) => ({ paused: !s.paused })),
   toggleThermal: () => set((s) => ({ thermal: !s.thermal })),
   setPhotoMode: (photoMode) => set({ photoMode }),
+  toggleLowGraphics: () =>
+    set((s) => {
+      const next = !s.lowGraphics;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ai1-low-graphics', String(next));
+      }
+      return { lowGraphics: next };
+    }),
   selectSat: (i) => set({ selectedIdx: i, chaseIdx: i, viewMode: 'inspect' }),
 }));

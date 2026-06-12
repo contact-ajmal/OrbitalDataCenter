@@ -1,3 +1,7 @@
+import { useEffect } from 'react';
+import { useThree } from '@react-three/fiber';
+import { ACESFilmicToneMapping, NoToneMapping } from 'three';
+import { useSimStore } from '../state/sim';
 import { Earth } from './Earth';
 import { Sky } from './Sky';
 import { SunMoon } from './SunMoon';
@@ -23,6 +27,13 @@ import { CameraRig } from './CameraRig';
  * mesh + downlink, and the mode-driven camera rig.
  */
 export function Scene() {
+  const gl = useThree((s) => s.gl);
+  const lowGraphics = useSimStore((s) => s.lowGraphics);
+
+  useEffect(() => {
+    gl.toneMapping = lowGraphics ? ACESFilmicToneMapping : NoToneMapping;
+  }, [gl, lowGraphics]);
+
   return (
     <>
       <Sky />

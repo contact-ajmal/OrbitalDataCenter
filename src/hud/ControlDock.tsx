@@ -62,6 +62,8 @@ export function ControlDock() {
   const thermal = useSimStore((s) => s.thermal);
   const toggleThermal = useSimStore((s) => s.toggleThermal);
   const setPhotoMode = useSimStore((s) => s.setPhotoMode);
+  const lowGraphics = useSimStore((s) => s.lowGraphics);
+  const toggleLowGraphics = useSimStore((s) => s.toggleLowGraphics);
   const econOpen = useUiStore((s) => s.econOpen);
   const toggleEcon = useUiStore((s) => s.toggleEcon);
   const roadmapActive = useRoadmapStore((s) => s.active);
@@ -224,6 +226,19 @@ export function ControlDock() {
             title="Cinematic tour"
           />
           <UtilBtn glyph="🔊" on={isAudioOn()} onClick={toggleAudio} title="Sound" />
+          <UtilBtn
+            glyph="⚡"
+            on={lowGraphics}
+            onClick={() => {
+              toggleLowGraphics();
+              toast(
+                !lowGraphics
+                  ? 'PERFORMANCE MODE ACTIVE — 1X RESOLUTION, POST-PROCESSING BYPASSED'
+                  : 'HIGH QUALITY ACTIVE — BLOOM & HDR ENABLED'
+              );
+            }}
+            title={lowGraphics ? 'Switch to High Quality Graphics' : 'Switch to High Performance Mode'}
+          />
           <UtilBtn glyph="📸" onClick={() => setPhotoMode(true)} title="Photo mode" />
           <UtilBtn
             glyph="🔗"
