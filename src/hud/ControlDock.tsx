@@ -87,7 +87,7 @@ export function ControlDock() {
 
   return (
     <Panel
-      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[420px] max-h-[60vh] overflow-y-auto p-4 flex flex-col gap-4 border-white/15 backdrop-blur-lg transition-all duration-300 z-10 hud:bottom-9 hud:w-auto hud:max-w-none hud:max-h-none hud:flex-row hud:flex-nowrap hud:items-center hud:justify-center hud:gap-x-5 hud:gap-y-3 ${
+      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[420px] max-h-[60vh] overflow-y-auto p-4 flex flex-col gap-4 border-white/15 backdrop-blur-lg transition-all duration-300 z-10 hud:bottom-9 hud:w-auto hud:max-w-none hud:max-h-none hud:overflow-visible hud:flex-row hud:flex-nowrap hud:items-center hud:justify-center hud:gap-x-5 hud:gap-y-3 ${
         show ? 'flex' : 'hidden hud:flex'
       }`}
     >
@@ -119,7 +119,7 @@ export function ControlDock() {
 
       <div className="flex flex-col gap-1 shrink-0">
         <Label>Layers</Label>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 hud:flex-nowrap">
           {(['lasers', 'downlink', 'orbits', 'starlink'] as const).map((k) => (
             <button
               key={k}
@@ -159,7 +159,7 @@ export function ControlDock() {
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 w-full shrink-0 hud:w-auto hud:items-end">
+      <div className="flex flex-wrap items-center gap-2 w-full shrink-0 hud:w-auto hud:flex-nowrap hud:items-end">
         <button
           onClick={() => emit('job:run', 1)}
           disabled={jobBusy}
@@ -213,7 +213,7 @@ export function ControlDock() {
 
       <div className="flex flex-col gap-1 shrink-0">
         <Label>Utility</Label>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 hud:flex-nowrap">
           <UtilBtn glyph="⟲" onClick={requestReset} title="Reset view (R)" />
           <UtilBtn
             glyph={paused ? '▶' : '⏸'}
