@@ -5,6 +5,7 @@ import {
   type Texture,
   type WebGLRenderer,
 } from 'three';
+import { useSimStore } from '../state/sim';
 
 /**
  * Texture asset registry — maps logical names to files in /public/textures.
@@ -58,7 +59,12 @@ export async function loadTexture(
   name: TextureName,
   opts: { srgb?: boolean } = {},
 ): Promise<Texture | null> {
-  const url = `${import.meta.env.BASE_URL}textures/${FILES[name]}`;
+  const low = useSimStore.getState().lowGraphics;
+  const fileName = FILES[name];
+  const finalFile = low
+    ? fileName.replace(/\.(jpg|png)$/, '-low.$1')
+    : fileName;
+  const url = `${import.meta.env.BASE_URL}textures/${finalFile}`;
   try {
     const tex = await loader.loadAsync(url);
     tex.anisotropy = maxAnisotropy;
