@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
+  <defs>
+    <clipPath id="core"><circle cx="18" cy="18" r="8"/></clipPath>
+  </defs>
+  <circle cx="18" cy="18" r="8" fill="#0e1d33"/>
+  <g clip-path="url(#core)">
+    <rect x="18" y="10" width="8" height="16" fill="#1b3b63"/>
+    <line x1="18" y1="10" x2="18" y2="26" stroke="#ffb554" stroke-width="0.6"/>
+  </g>
+  <ellipse cx="18" cy="18" rx="15" ry="5.5" stroke="#52d7ff" stroke-width="1.4"
+    transform="rotate(97.6 18 18)"/>
+  <rect x="22.6" y="9.7" width="4" height="4" fill="#ffb554" transform="rotate(45 24.6 11.7)"/>
+</svg>

@@ -1,0 +1,70 @@
+import { create } from 'zustand';
+
+export type ViewMode = 'overview' | 'chase' | 'inspect' | 'launch';
+
+export type Toggles = {
+  lasers: boolean;
+  downlink: boolean;
+  orbits: boolean;
+  starlink: boolean;
+};
+
+/**
+ * Simulation CONFIG / UI state (low-frequency, drives renders). High-frequency
+ * per-frame telemetry lives in state/telemetry.ts, NOT here.
+ */
+type SimState = {
+  satCount: number;
+  timeWarp: number;
+  toggles: Toggles;
+  viewMode: ViewMode;
+  chaseIdx: number;
+  selectedIdx: number;
+  visionOn: boolean;
+  jobBusy: boolean;
+  paused: boolean;
+  thermal: boolean;
+  photoMode: boolean;
+
+  setSatCount: (n: number) => void;
+  setTimeWarp: (n: number) => void;
+  toggle: (key: keyof Toggles) => void;
+  setViewMode: (m: ViewMode) => void;
+  setChaseIdx: (i: number) => void;
+  setSelectedIdx: (i: number) => void;
+  setVisionOn: (v: boolean) => void;
+  setJobBusy: (v: boolean) => void;
+  togglePaused: () => void;
+  toggleThermal: () => void;
+  setPhotoMode: (v: boolean) => void;
+  /** Select a satellite AND fly to it: sets selectedIdx + chaseIdx + inspect. */
+  selectSat: (i: number) => void;
+};
+
+export const useSimStore = create<SimState>((set) => ({
+  satCount: 480,
+  timeWarp: 60,
+  toggles: { lasers: true, downlink: true, orbits: false, starlink: false },
+  viewMode: 'overview',
+  chaseIdx: 0,
+  selectedIdx: -1,
+  visionOn: false,
+  jobBusy: false,
+  paused: false,
+  thermal: false,
+  photoMode: false,
+
+  setSatCount: (satCount) => set({ satCount }),
+  setTimeWarp: (timeWarp) => set({ timeWarp }),
+  toggle: (key) =>
+    set((s) => ({ toggles: { ...s.toggles, [key]: !s.toggles[key] } })),
+  setViewMode: (viewMode) => set({ viewMode }),
+  setChaseIdx: (chaseIdx) => set({ chaseIdx }),
+  setSelectedIdx: (selectedIdx) => set({ selectedIdx }),
+  setVisionOn: (visionOn) => set({ visionOn }),
+  setJobBusy: (jobBusy) => set({ jobBusy }),
+  togglePaused: () => set((s) => ({ paused: !s.paused })),
+  toggleThermal: () => set((s) => ({ thermal: !s.thermal })),
+  setPhotoMode: (photoMode) => set({ photoMode }),
+  selectSat: (i) => set({ selectedIdx: i, chaseIdx: i, viewMode: 'inspect' }),
+}));

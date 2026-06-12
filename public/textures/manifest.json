@@ -1,0 +1,44 @@
+[
+  {
+    "name": "earth-day",
+    "file": "earth-day.jpg",
+    "bytes": 4425114,
+    "source": "https://raw.githubusercontent.com/franky-adl/threejs-earth/main/src/assets/Albedo.jpg"
+  },
+  {
+    "name": "earth-night",
+    "file": "earth-night.png",
+    "bytes": 1422842,
+    "source": "https://raw.githubusercontent.com/franky-adl/threejs-earth/main/src/assets/night_lights_modified.png"
+  },
+  {
+    "name": "earth-bump",
+    "file": "earth-bump.jpg",
+    "bytes": 2322957,
+    "source": "https://raw.githubusercontent.com/franky-adl/threejs-earth/main/src/assets/Bump.jpg"
+  },
+  {
+    "name": "earth-clouds",
+    "file": "earth-clouds.png",
+    "bytes": 8151461,
+    "source": "https://raw.githubusercontent.com/franky-adl/threejs-earth/main/src/assets/Clouds.png"
+  },
+  {
+    "name": "earth-ocean",
+    "file": "earth-ocean.png",
+    "bytes": 688779,
+    "source": "https://raw.githubusercontent.com/franky-adl/threejs-earth/main/src/assets/Ocean.png"
+  },
+  {
+    "name": "sky-gaia",
+    "file": "sky-gaia.png",
+    "bytes": 7696830,
+    "source": "https://raw.githubusercontent.com/franky-adl/threejs-earth/main/src/assets/Gaia_EDR3_darkened.png"
+  },
+  {
+    "name": "moon",
+    "file": "moon.jpg",
+    "bytes": 1830397,
+    "source": "https://raw.githubusercontent.com/CoryG89/MoonDemo/master/img/maps/moon.jpg"
+  }
+]

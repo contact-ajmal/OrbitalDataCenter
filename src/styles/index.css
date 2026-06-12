@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+
+/* ── AI1 Orbital Compute — design system tokens (Tailwind v4 @theme) ── */
+@theme {
+  --color-ink: #e8f1f8;
+  --color-dim: #6e8296;
+  --color-faint: #3a4a5a;
+  --color-laser: #52d7ff;
+  --color-solar: #ffb554;
+  --color-ok: #5dffb0;
+
+  --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Mono', ui-monospace, Menlo, monospace;
+
+  /* Custom HUD breakpoint (enables the `hud:` variant at ≥900px). */
+  --breakpoint-hud: 900px;
+
+  --animate-marquee: ai1-marquee 42s linear infinite;
+  --animate-pulse-dot: ai1-pulse 1.8s ease-in-out infinite;
+  --animate-logo-pulse: ai1-logopulse 4s ease-in-out infinite;
+}
+
+@keyframes ai1-logopulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes ai1-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes ai1-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    opacity: 0.4;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+  }
+}
