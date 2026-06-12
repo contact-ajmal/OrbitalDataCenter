@@ -138,6 +138,15 @@ export function JobRouter() {
     const posAttr = line.geometry.getAttribute('position') as BufferAttribute;
     const arr = posAttr.array as Float32Array;
 
+    const st = useSimStore.getState();
+    if (!st.jobBusy && job) {
+      jobRef.current = null;
+      glow.visible = false;
+      (line.material as LineBasicMaterial).opacity = 0;
+      line.geometry.setDrawRange(0, 0);
+      return;
+    }
+
     if (!job) {
       if ((line.material as LineBasicMaterial).opacity > 0) {
         (line.material as LineBasicMaterial).opacity = 0;

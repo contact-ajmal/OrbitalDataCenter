@@ -21,9 +21,10 @@ let clickHandler: ((e: MouseEvent) => void) | null = null;
 
 export function audioPreference(): boolean {
   try {
-    return localStorage.getItem(KEY) === '1';
+    const val = localStorage.getItem(KEY);
+    return val === null ? true : val === '1';
   } catch {
-    return false;
+    return true;
   }
 }
 export function isAudioOn(): boolean {
