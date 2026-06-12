@@ -32,7 +32,6 @@ import { network } from '../state/network';
 import { earthGroupRef } from '../state/world';
 import { useSimStore, type ViewMode } from '../state/sim';
 import { launch } from '../state/launch';
-import { performReset, resetFlags } from '../state/reset';
 import { launchTally } from '../state/econ';
 
 const ORBIT_R = SCENE.ORBIT_R;
@@ -360,10 +359,6 @@ export function Starship() {
           launch.active = false;
           launch.deployed = 0;
           runRef.current = null;
-          if (resetFlags.queued) {
-            resetFlags.queued = false;
-            performReset(); // run the reset queued mid-launch
-          }
           return;
         }
       }

@@ -3,20 +3,22 @@ import { useSimStore } from './sim';
 import { useUiStore } from './ui';
 import { tour } from './tour';
 import { storm } from './storm';
-import { launch } from './launch';
 import { stopTraining } from '../sim/training';
 
 /** Camera-reset easing target (consumed by CameraRig). */
 export const cameraReset = { active: false, t: 0, yaw: 0.6, pitch: 0.35, dist: 330 };
 
-/** Set when a reset is requested mid-launch; fired at mission completion. */
+/** Set when a reset is requested mid-launch; fired at mission completion (deprecated). */
 export const resetFlags = { queued: false };
 
 /** Reset the camera + UI to the opening state (data is preserved). */
 export function performReset(): void {
-  // Reset all simulation configurations to defaults
+  // Preserve the current satellite count (data is preserved)
+  const currentSatCount = useSimStore.getState().satCount;
+
+  // Reset all simulation configurations to defaults except satCount
   useSimStore.setState({
-    satCount: 480,
+    satCount: currentSatCount,
     timeWarp: 60,
     toggles: { lasers: true, downlink: true, orbits: false, starlink: false },
     viewMode: 'overview',
@@ -41,14 +43,8 @@ export function performReset(): void {
 }
 
 /**
- * Request a reset. If a launch is in flight, queue it (aborting mid-deploy would
- * orphan satellites) and run it automatically when the mission completes.
+ * Request a reset. Executes the reset immediately. Active launches are not stopped.
  */
 export function requestReset(): void {
-  if (launch.active) {
-    resetFlags.queued = true;
-    toast('MISSION IN PROGRESS — RESET QUEUED');
-    return;
-  }
   performReset();
 }
