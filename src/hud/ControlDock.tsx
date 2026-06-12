@@ -238,7 +238,7 @@ export function ControlDock() {
             onClick={() => (tour.active ? stopTour(true) : startTour())}
             title="Cinematic tour"
           />
-          <UtilBtn glyph="🔊" on={isAudioOn()} onClick={toggleAudio} title="Sound" />
+          <UtilBtn glyph="🔊" on={isAudioOn()} onClick={toggleAudio} title="Soft Music" />
           <UtilBtn
             glyph="⚡"
             on={lowGraphics}
