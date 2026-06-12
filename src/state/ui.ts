@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 export type InfoTab = 'mission' | 'vehicle' | 'how' | 'data' | 'controls' | 'credits';
+export type MobileTab = 'none' | 'telemetry' | 'controls' | 'econ';
 
 /** HUD UI state: the Info modal (open + active tab). */
 type UiState = {
@@ -11,6 +12,8 @@ type UiState = {
   setInfoTab: (t: InfoTab) => void;
   econOpen: boolean;
   toggleEcon: () => void;
+  mobileTab: MobileTab;
+  setMobileTab: (tab: MobileTab) => void;
 };
 
 export const useUiStore = create<UiState>((set) => ({
@@ -21,4 +24,7 @@ export const useUiStore = create<UiState>((set) => ({
   setInfoTab: (infoTab) => set({ infoTab }),
   econOpen: false,
   toggleEcon: () => set((s) => ({ econOpen: !s.econOpen })),
+  mobileTab: 'none',
+  setMobileTab: (mobileTab) => set({ mobileTab }),
 }));
+

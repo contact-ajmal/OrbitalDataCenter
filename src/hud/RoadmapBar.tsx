@@ -82,7 +82,7 @@ export function RoadmapBar() {
   };
 
   return (
-    <Panel className="absolute bottom-32 left-1/2 w-[min(680px,92vw)] -translate-x-1/2 px-4 py-2.5">
+    <Panel className="absolute bottom-16 left-1/2 w-[92vw] max-w-[420px] -translate-x-1/2 px-4 py-2.5 transition-all duration-300 border-white/15 backdrop-blur-lg hud:bottom-32 hud:w-[min(680px,92vw)] hud:max-w-none z-10">
       <div className="mb-2 flex items-center gap-3">
         <button
           onClick={togglePlay}

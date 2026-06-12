@@ -3,6 +3,7 @@ import { Label, Panel } from './ui';
 import { SAT_KW_AVG } from '../lib/constants';
 import { telemetry } from '../state/telemetry';
 import { RUN_STEPS, training } from '../sim/training';
+import { useUiStore } from '../state/ui';
 
 const SPARK_W = 200;
 const SPARK_H = 34;
@@ -51,11 +52,18 @@ export function TrainingPanel() {
     return () => clearInterval(id);
   }, []);
 
+  const mobileTab = useUiStore((s) => s.mobileTab);
+  const show = mobileTab === 'telemetry';
+
   if (!training.active) return null;
   const effGW = (telemetry.sunlitFrac * telemetry.count * SAT_KW_AVG) / 1e6;
 
   return (
-    <Panel className="absolute left-3 top-[420px] w-[228px] p-3 hud:w-[248px]">
+    <Panel
+      className={`absolute left-1/2 -translate-x-1/2 bottom-[330px] w-[92vw] max-w-[340px] p-3 transition-all duration-300 border-white/15 backdrop-blur-lg hud:left-3 hud:translate-x-0 hud:top-[420px] hud:bottom-auto hud:w-[248px] ${
+        show ? 'block' : 'hidden hud:block'
+      }`}
+    >
       <div className="mb-2 flex items-center justify-between border-b border-white/8 pb-2">
         <Label>Distributed Training</Label>
         <span

@@ -141,10 +141,21 @@ export function EconPanel() {
 
   const fmtUsd = (v: number) => `$${v.toFixed(2)}`;
 
-  if (!econOpen) return null;
+  const mobileTab = useUiStore((s) => s.mobileTab);
+  const show = mobileTab === 'econ';
+
+  if (!econOpen && !show) return null;
+
+  const displayClass = show
+    ? 'flex flex-col'
+    : econOpen
+      ? 'hidden hud:flex hud:flex-col'
+      : 'hidden';
 
   return (
-    <Panel className="absolute right-3 top-12 w-[256px] p-3">
+    <Panel
+      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[340px] max-h-[60vh] overflow-y-auto p-3 transition-all duration-300 border-white/15 backdrop-blur-lg hud:left-auto hud:right-3 hud:translate-x-0 hud:top-12 hud:bottom-auto hud:w-[256px] hud:max-h-none ${displayClass}`}
+    >
       <div className="mb-2 border-b border-white/8 pb-2">
         <Label>Compute Economics</Label>
       </div>

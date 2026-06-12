@@ -5,6 +5,7 @@ import { tokenTarget, useTelemetryPoll } from './useTelemetryPoll';
 import { useSimStore } from '../state/sim';
 import { starlink } from '../state/starlink';
 import { conjunction } from '../state/conjunction';
+import { useUiStore } from '../state/ui';
 
 const SPARK_W = 208;
 const SPARK_H = 34;
@@ -81,9 +82,15 @@ export function TelemetryPanel() {
   const power = fmtPower(s.computeKW);
   const tok = fmtTokens(s.tokensDisplay);
   const heat = 0.45 + 0.5 * s.sunlitFrac;
+  const mobileTab = useUiStore((st) => st.mobileTab);
+  const show = mobileTab === 'telemetry';
 
   return (
-    <Panel className="absolute left-3 top-12 w-[228px] p-3 hud:w-[248px]">
+    <Panel
+      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[340px] max-h-[60vh] overflow-y-auto p-3 transition-all duration-300 border-white/15 backdrop-blur-lg hud:left-3 hud:translate-x-0 hud:top-12 hud:bottom-auto hud:w-[248px] hud:max-h-none ${
+        show ? 'flex flex-col' : 'hidden hud:flex hud:flex-col'
+      }`}
+    >
       <div className="mb-2 border-b border-white/8 pb-2">
         <Label>{thermal ? 'Thermal Telemetry' : 'Constellation Telemetry'}</Label>
       </div>

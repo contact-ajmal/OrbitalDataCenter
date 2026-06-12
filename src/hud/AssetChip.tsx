@@ -22,7 +22,7 @@ export function AssetChip() {
   if (hidden || loaded.size === 0) return null;
 
   return (
-    <div className="pointer-events-none absolute bottom-9 right-3 rounded border border-white/10 bg-black/65 px-2.5 py-1.5 backdrop-blur-md">
+    <div className="pointer-events-none absolute bottom-16 right-3 rounded border border-white/10 bg-black/65 px-2.5 py-1.5 backdrop-blur-md transition-all duration-300 hud:bottom-9 hud:right-3">
       <div className="flex flex-wrap gap-x-2 gap-y-0.5">
         {ORDER.map((name) => {
           const done = loaded.has(name);

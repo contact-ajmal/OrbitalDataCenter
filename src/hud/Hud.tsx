@@ -20,6 +20,57 @@ import { ConjunctionBanner } from './ConjunctionBanner';
 import { PhotoMode } from './PhotoMode';
 import { PermalinkSync } from './PermalinkSync';
 import { useSimStore } from '../state/sim';
+import { useUiStore } from '../state/ui';
+import { Panel } from './ui';
+
+function MobileNav() {
+  const mobileTab = useUiStore((s) => s.mobileTab);
+  const setMobileTab = useUiStore((s) => s.setMobileTab);
+  const selectedIdx = useSimStore((s) => s.selectedIdx);
+
+  return (
+    <Panel className="pointer-events-auto absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center justify-between gap-1 p-1 w-[92vw] max-w-[480px] z-20 shadow-[0_4px_20px_rgba(0,0,0,0.6)] border-white/15 backdrop-blur-lg hud:hidden">
+      <button
+        onClick={() => setMobileTab(mobileTab === 'telemetry' ? 'none' : 'telemetry')}
+        className={`flex-1 py-2 text-center text-[10px] uppercase tracking-[.18em] rounded font-bold cursor-pointer transition-all ${
+          mobileTab === 'telemetry'
+            ? 'bg-laser/20 text-laser border border-laser/35'
+            : 'text-dim hover:text-ink border border-transparent'
+        }`}
+      >
+        📊 Telemetry
+      </button>
+      <button
+        onClick={() => setMobileTab(mobileTab === 'controls' ? 'none' : 'controls')}
+        className={`flex-1 py-2 text-center text-[10px] uppercase tracking-[.18em] rounded font-bold cursor-pointer transition-all ${
+          mobileTab === 'controls'
+            ? 'bg-laser/20 text-laser border border-laser/35'
+            : 'text-dim hover:text-ink border border-transparent'
+        }`}
+      >
+        🕹 Controls
+      </button>
+      <button
+        onClick={() => setMobileTab(mobileTab === 'econ' ? 'none' : 'econ')}
+        className={`flex-1 py-2 text-center text-[10px] uppercase tracking-[.18em] rounded font-bold cursor-pointer transition-all ${
+          mobileTab === 'econ'
+            ? 'bg-laser/20 text-laser border border-laser/35'
+            : 'text-dim hover:text-ink border border-transparent'
+        }`}
+      >
+        💰 Econ
+      </button>
+      {selectedIdx >= 0 && (
+        <button
+          onClick={() => setMobileTab('none')}
+          className={`flex-1 py-2 text-center text-[10px] uppercase tracking-[.18em] rounded font-bold cursor-pointer border border-solar/40 bg-solar/15 text-solar animate-pulse`}
+        >
+          🛰 Satellite
+        </button>
+      )}
+    </Panel>
+  );
+}
 
 /**
  * DOM HUD overlay — sits above the Canvas. The container is pointer-events-none
@@ -51,6 +102,7 @@ export function Hud() {
         <ConjunctionBanner />
         <RoadmapBar />
         <ControlDock />
+        <MobileNav />
         <BadgeRail />
         <Ticker />
         <AssetChip />
@@ -61,3 +113,4 @@ export function Hud() {
     </div>
   );
 }
+

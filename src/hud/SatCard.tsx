@@ -128,13 +128,13 @@ export function SatCard() {
   const id = `AI1-${String(i).padStart(4, '0')}`;
   // real altitude for AI1 is ~600 km; show the live value
   return (
-    <Panel className="absolute bottom-28 right-3 w-[230px] p-3 hud:bottom-9">
+    <Panel className="absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[340px] max-h-[60vh] overflow-y-auto p-3 transition-all duration-300 border-white/15 backdrop-blur-lg hud:left-auto hud:right-3 hud:translate-x-0 hud:bottom-9 hud:w-[230px] hud:max-h-none z-10">
       <div className="mb-2 flex items-center justify-between border-b border-white/8 pb-2">
         <span className="font-mono text-[12px] tracking-[.12em] text-laser">{id}</span>
         <button
           onClick={() => setSelectedIdx(-1)}
           title="Deselect satellite"
-          className="pointer-events-auto text-[12px] leading-none text-dim hover:text-ink"
+          className="pointer-events-auto flex items-center justify-center h-7 w-7 text-[14px] leading-none text-dim hover:text-ink cursor-pointer rounded-full hover:bg-white/10"
         >
           ✕
         </button>
