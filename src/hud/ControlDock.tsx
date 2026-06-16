@@ -92,15 +92,26 @@ export function ControlDock() {
   const setAdcsActive = useUiStore((s) => s.setAdcsActive);
   
   const show = mobileTab === 'controls';
+  const [expanded, setExpanded] = useState(false);
+
+  const handleTabClick = (tab: typeof activeTab) => {
+    if (activeTab === tab) {
+      setExpanded(!expanded);
+    } else {
+      setActiveTab(tab);
+      setExpanded(true);
+    }
+  };
 
   return (
     <Panel
-      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[480px] max-h-[60vh] overflow-y-auto p-3.5 flex flex-col gap-3.5 border-white/15 backdrop-blur-lg transition-all duration-300 z-10 hud:bottom-9 hud:w-auto hud:max-w-[580px] hud:max-h-none hud:overflow-visible ${
-        show ? 'flex' : 'hidden hud:flex'
-      }`}
+      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[520px] transition-all duration-300 z-10 border-white/15 backdrop-blur-lg flex flex-col hud:bottom-9 hud:max-w-[640px] ${
+        expanded ? 'p-3.5 gap-3.5 max-h-[60vh] overflow-y-auto hud:max-h-none hud:overflow-visible' : 'p-2 gap-0 overflow-hidden'
+      } ${show ? 'flex' : 'hidden hud:flex'}`}
     >
       {/* 1. Tab Contents */}
-      <div className="flex flex-wrap items-center justify-center gap-3 w-full min-h-[46px]">
+      {expanded && (
+        <div className="flex flex-wrap items-center justify-center gap-3 w-full min-h-[46px]">
         {activeTab === 'networks' && (
           <div className="flex flex-wrap items-center justify-between w-full gap-3">
             <div className="flex flex-col gap-1 shrink-0">
@@ -384,20 +395,23 @@ export function ControlDock() {
           </div>
         )}
       </div>
+      )}
 
       {/* 2. Category Tab Selector Bar */}
-      <div className="flex border-t border-white/8 pt-2 justify-around items-center w-full gap-1">
+      <div className={`flex justify-between items-center w-full gap-2 ${expanded ? 'border-t border-white/8 pt-2' : ''}`}>
         {(['networks', 'fleet', 'compute', 'hazards', 'system'] as const).map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-2 py-1 text-[9px] uppercase font-bold tracking-[.15em] transition-all cursor-pointer rounded-sm border-b-2 ${
-              activeTab === tab
-                ? 'text-laser border-laser'
-                : 'text-faint border-transparent hover:text-dim'
+            onClick={() => handleTabClick(tab)}
+            className={`flex-1 text-center px-1.5 py-2 text-[10px] uppercase font-bold tracking-[.18em] transition-all cursor-pointer rounded border ${
+              activeTab === tab && expanded
+                ? 'text-laser border-laser/40 bg-laser/10'
+                : activeTab === tab
+                  ? 'text-dim border-white/20 bg-white/5'
+                  : 'text-faint border-transparent hover:text-dim hover:bg-white/3'
             }`}
           >
-            {tab}
+            {tab} {activeTab === tab ? (expanded ? '▾' : '▴') : ''}
           </button>
         ))}
       </div>
