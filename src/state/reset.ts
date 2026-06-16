@@ -20,7 +20,7 @@ export function performReset(): void {
   useSimStore.setState({
     satCount: currentSatCount,
     timeWarp: 60,
-    toggles: { lasers: true, downlink: true, orbits: false, starlink: false },
+    toggles: { lasers: true, downlink: true, orbits: false, starlink: false, traffic: false, heatmap: false },
     viewMode: 'overview',
     chaseIdx: 0,
     selectedIdx: -1,

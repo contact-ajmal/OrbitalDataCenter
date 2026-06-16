@@ -19,6 +19,7 @@ export function buildLinks(sats: Sat[]): Links {
 
   const addEdge = (a: number, b: number) => {
     if (a === b) return;
+    if (sats[a]?.deorbiting || sats[b]?.deorbiting || sats[a]?.burned || sats[b]?.burned) return;
     const key = a < b ? a * n + b : b * n + a;
     if (seen.has(key)) return;
     seen.add(key);

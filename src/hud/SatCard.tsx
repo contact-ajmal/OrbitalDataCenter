@@ -5,6 +5,8 @@ import { telemetry } from '../state/telemetry';
 import { network } from '../state/network';
 import { useSimStore } from '../state/sim';
 import { thermalCss } from '../scene/thermalPalette';
+import { buildLinks } from '../sim/links';
+import { toast } from '../lib/bus';
 
 const KM_PER_UNIT = 63.71;
 
@@ -17,6 +19,8 @@ type Card = {
   load: number;
   temp: number;
   links: number;
+  deorbiting: boolean;
+  burned: boolean;
 };
 
 function read(i: number): Card | null {
@@ -37,6 +41,8 @@ function read(i: number): Card | null {
     load: stormHit ? 2 + (i % 3) : eclipsed ? 4 + (i % 4) : 88 + (i % 10),
     temp: stormHit ? -12 : eclipsed ? -41 : 58,
     links: network.adj[i]?.length ?? 0,
+    deorbiting: !!sat?.deorbiting,
+    burned: !!sat?.burned,
   };
 }
 
@@ -148,8 +154,8 @@ export function SatCard() {
       <Stat label="Period" value={PERIOD_MIN.toFixed(1)} unit="min" />
       <Stat
         label="Status"
-        value={card.stormHit ? 'SAFE MODE' : card.eclipsed ? 'IN ECLIPSE' : 'SUNLIT'}
-        accent={card.stormHit ? 'text-solar' : card.eclipsed ? 'text-dim' : 'text-solar'}
+        value={card.burned ? 'BURNED UP' : card.deorbiting ? 'DEORBITING' : card.stormHit ? 'SAFE MODE' : card.eclipsed ? 'IN ECLIPSE' : 'SUNLIT'}
+        accent={card.burned ? 'text-red-500' : card.deorbiting ? 'text-orange-400' : card.stormHit ? 'text-solar' : card.eclipsed ? 'text-dim' : 'text-solar'}
       />
       <Stat label="Compute load" value={card.load} unit="%" accent="text-laser" />
       <div className="flex items-baseline justify-between gap-3 py-[3px]">
@@ -180,6 +186,40 @@ export function SatCard() {
       >
         ◉ Track This Satellite
       </button>
+
+      {card.burned ? (
+        <button
+          disabled
+          className="pointer-events-auto mt-2 w-full rounded border border-red-500/35 bg-red-500/10 py-1.5 text-[9px] uppercase tracking-[.2em] text-red-400 font-mono"
+        >
+          ☠ Burned Up
+        </button>
+      ) : card.deorbiting ? (
+        <button
+          disabled
+          className="pointer-events-auto mt-2 w-full rounded border border-orange-500/35 bg-orange-500/10 py-1.5 text-[9px] uppercase tracking-[.2em] text-orange-400 font-mono"
+        >
+          ☄ Deorbiting...
+        </button>
+      ) : (
+        <button
+          onClick={() => {
+            const sat = network.sats[i];
+            if (sat) {
+              sat.deorbiting = true;
+              toast(`☄ DEORBIT SEQUENCE INITIATED FOR SAT-${i}`);
+              const { pairs, adj } = buildLinks(network.sats);
+              network.pairs = pairs;
+              network.adj = adj;
+              setCard((prev) => prev ? { ...prev, deorbiting: true } : null);
+            }
+          }}
+          title="Deorbit this satellite (decays altitude and burns up)"
+          className="pointer-events-auto mt-2 w-full rounded border border-orange-500/60 py-1.5 text-[9px] uppercase tracking-[.2em] text-orange-400 transition-colors hover:bg-orange-500/15"
+        >
+          ☄ Deorbit Satellite
+        </button>
+      )}
     </Panel>
   );
 }

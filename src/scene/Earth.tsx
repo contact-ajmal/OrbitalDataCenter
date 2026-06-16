@@ -22,6 +22,8 @@ import {
   surfaceFrag,
   surfaceVert,
 } from './shaders/earth';
+import { storm } from '../state/storm';
+import { type Mesh, type MeshBasicMaterial } from 'three';
 
 const EARTH_R = SCENE.EARTH_R;
 
@@ -40,6 +42,11 @@ export function Earth() {
   const gl = useThree((s) => s.gl);
   const groupRef = useRef<Group>(null);
   const [ready, setReady] = useState(false); // swap procedural → HQ once day+night land
+
+  const auroraNorthRef = useRef<MeshBasicMaterial>(null);
+  const auroraSouthRef = useRef<MeshBasicMaterial>(null);
+  const meshNorthRef = useRef<Mesh>(null);
+  const meshSouthRef = useRef<Mesh>(null);
 
   const placeholder = useMemo(makePlaceholder, []);
 
@@ -170,7 +177,7 @@ export function Earth() {
   }, [gl, surfaceMat, cloudMat]);
 
   // ── Per-frame: rotate Earth, drift clouds ────────────────────────────────
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
     const st = useSimStore.getState();
     const w = st.timeWarp / NOMINAL_WARP; // normalized warp
     const sdt = st.paused ? 0 : dt;
@@ -185,6 +192,26 @@ export function Earth() {
     u.value += (target - u.value) * (1 - Math.exp(-dt / 0.18));
     cloudMat.opacity = 1 - u.value;
     cloudMat.transparent = true;
+
+    // Auroral rings pulsing and scaling during solar storm
+    const stormActive = storm.active;
+    const time = state.clock.getElapsedTime();
+    const targetOp = stormActive ? 0.65 + Math.sin(time * 5) * 0.15 : 0;
+    const targetScale = stormActive ? 1.0 + Math.sin(time * 2.5) * 0.04 : 1.0;
+
+    const nMat = auroraNorthRef.current;
+    const sMat = auroraSouthRef.current;
+    if (nMat && sMat) {
+      nMat.opacity += (targetOp - nMat.opacity) * (1 - Math.exp(-dt / 0.5));
+      sMat.opacity += (targetOp - sMat.opacity) * (1 - Math.exp(-dt / 0.5));
+    }
+    const nMesh = meshNorthRef.current;
+    const sMesh = meshSouthRef.current;
+    if (nMesh && sMesh) {
+      const s = targetScale;
+      nMesh.scale.set(s, s, 1);
+      sMesh.scale.set(s, s, 1);
+    }
   });
 
   return (
@@ -204,6 +231,32 @@ export function Earth() {
       {/* Atmosphere shell */}
       <mesh material={atmoMat} renderOrder={2}>
         <sphereGeometry args={[EARTH_R * 1.045, 64, 64]} />
+      </mesh>
+
+      {/* Auroral Rings (glowing green rings at the poles) */}
+      <mesh ref={meshNorthRef} position={[0, 4.93, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={3}>
+        <ringGeometry args={[0.85, 1.15, 64]} />
+        <meshBasicMaterial
+          ref={auroraNorthRef}
+          color="#00ff66"
+          transparent
+          opacity={0}
+          blending={AdditiveBlending}
+          depthWrite={false}
+          side={2}
+        />
+      </mesh>
+      <mesh ref={meshSouthRef} position={[0, -4.93, 0]} rotation={[Math.PI / 2, 0, 0]} renderOrder={3}>
+        <ringGeometry args={[0.85, 1.15, 64]} />
+        <meshBasicMaterial
+          ref={auroraSouthRef}
+          color="#00ff66"
+          transparent
+          opacity={0}
+          blending={AdditiveBlending}
+          depthWrite={false}
+          side={2}
+        />
       </mesh>
     </group>
   );

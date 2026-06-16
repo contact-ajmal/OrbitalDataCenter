@@ -21,6 +21,10 @@ import { StationLabelsProjector } from './StationLabelsProjector';
 import { SnapshotHandler } from './SnapshotHandler';
 import { TourController } from './TourController';
 import { CameraRig } from './CameraRig';
+import { TrafficPackets } from './TrafficPackets';
+import { StormWind } from './StormWind';
+import { HeatmapOverlay } from './HeatmapOverlay';
+import { ReentryTrails } from './ReentryTrails';
 
 /**
  * Root scene composition. The world (Sky/Sun/Moon/Earth), the fleet, the laser
@@ -55,6 +59,12 @@ export function Scene() {
       <SnapshotHandler />
       <TourController />
       <CameraRig />
+      
+      {/* Advanced Constellation Overlay Features */}
+      <TrafficPackets />
+      <StormWind />
+      <HeatmapOverlay />
+      <ReentryTrails />
     </>
   );
 }

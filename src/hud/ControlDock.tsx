@@ -120,7 +120,7 @@ export function ControlDock() {
       <div className="flex flex-col gap-1 shrink-0">
         <Label>Layers</Label>
         <div className="flex flex-wrap gap-1.5 hud:flex-nowrap">
-          {(['lasers', 'downlink', 'orbits', 'starlink'] as const).map((k) => (
+          {(['lasers', 'downlink', 'orbits', 'starlink', 'traffic', 'heatmap'] as const).map((k) => (
             <button
               key={k}
               onClick={() => toggle(k)}
@@ -131,7 +131,11 @@ export function ControlDock() {
                     ? 'Toggle ground-station data transmission beams'
                     : k === 'orbits'
                       ? 'Toggle orbital plane rings'
-                      : 'Toggle background Starlink constellation overlay'
+                      : k === 'starlink'
+                        ? 'Toggle background Starlink constellation overlay'
+                        : k === 'traffic'
+                          ? 'Toggle global network traffic flows'
+                          : 'Toggle global AI workload demand overlay'
               }
               className={
                 'pointer-events-auto rounded border px-2 py-1 text-[9px] uppercase tracking-[.16em] transition-colors cursor-pointer ' +

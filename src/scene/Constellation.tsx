@@ -246,6 +246,49 @@ export function Constellation() {
       const s = sats[i];
       if (!s) continue;
 
+      // Deorbit physics decay
+      if (s.deorbiting && !s.burned) {
+        // Decay orbital radius towards Earth's surface (EARTH_R = 5.0)
+        s.r -= sdt * w * 0.08;
+        if (s.r <= EARTH_R + 0.1) {
+          s.r = EARTH_R;
+          s.burned = true;
+          s.deorbiting = false;
+          toast(`⚠ DEORBIT COMPLETE — SAT-${i} BURNED UP IN ATMOSPHERE`);
+          
+          // Sever connections
+          const { pairs, adj } = buildLinks(sats);
+          network.pairs = pairs;
+          network.adj = adj;
+
+          // Reset selection / chase view
+          if (st.selectedIdx === i) {
+            st.setSelectedIdx(-1);
+            if (st.viewMode === 'chase' || st.viewMode === 'inspect') {
+              st.setViewMode('overview');
+            }
+          }
+        }
+      }
+
+      if (s.burned) {
+        // Zero out coordinates/glints
+        posArr[i * 3 + 0] = 0;
+        posArr[i * 3 + 1] = 0;
+        posArr[i * 3 + 2] = 0;
+        colArr[i * 3 + 0] = 0;
+        colArr[i * 3 + 1] = 0;
+        colArr[i * 3 + 2] = 0;
+        // Scale to 0 to hide instanced models
+        _part.makeScale(0, 0, 0);
+        bus.setMatrixAt(i, _part);
+        wl.setMatrixAt(i, _part);
+        wr.setMatrixAt(i, _part);
+        rf.setMatrixAt(i, _part);
+        rb.setMatrixAt(i, _part);
+        continue;
+      }
+
       angleToPos(satAngle(s, t), s.raan, s.inc, s.r, _angle);
       _pos.set(_angle[0]!, _angle[1]!, _angle[2]!);
 

@@ -7,6 +7,8 @@ export type Toggles = {
   downlink: boolean;
   orbits: boolean;
   starlink: boolean;
+  traffic: boolean;
+  heatmap: boolean;
 };
 
 /**
@@ -46,7 +48,7 @@ type SimState = {
 export const useSimStore = create<SimState>((set) => ({
   satCount: 480,
   timeWarp: 60,
-  toggles: { lasers: true, downlink: true, orbits: false, starlink: false },
+  toggles: { lasers: true, downlink: true, orbits: false, starlink: false, traffic: false, heatmap: false },
   viewMode: 'overview',
   chaseIdx: 0,
   selectedIdx: -1,

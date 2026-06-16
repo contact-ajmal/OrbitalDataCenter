@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSimStore } from '../state/sim';
 import { LABEL_KEYS, labelState, type LabelKey } from '../state/labels';
 import { Label, Panel } from './ui';
@@ -131,6 +131,83 @@ export function PartLabels() {
   const inspectComponent = useUiStore((s) => s.inspectComponent);
   const setHoveredComponent = useUiStore((s) => s.setHoveredComponent);
   const setInspectComponent = useUiStore((s) => s.setInspectComponent);
+
+  // Onboard GPU task queue and telemetry states
+  const [gpuStats, setGpuStats] = useState({
+    load: 82,
+    vram: 176.4,
+    temp: 54,
+    clock: 2115,
+  });
+
+  const [grokTasks, setGrokTasks] = useState([
+    { id: '#0921', name: 'Grok-3: Chat Inference', status: 'active', pct: 45 },
+    { id: '#0922', name: 'federated-weights-sync', status: 'active', pct: 72 },
+    { id: '#0923', name: 'Mesh Route Optimization', status: 'queued', pct: 0 },
+    { id: '#0924', name: 'starlink-handshake-tx', status: 'completed', pct: 100 },
+  ]);
+
+  useEffect(() => {
+    if (inspectComponent !== 'compute') return;
+
+    const interval = setInterval(() => {
+      // 1. Randomize GPU stats slightly
+      setGpuStats((prev) => {
+        const nextLoad = Math.max(65, Math.min(98, prev.load + Math.floor(Math.random() * 9 - 4)));
+        const nextTemp = Math.max(48, Math.min(66, prev.temp + Math.floor(Math.random() * 3 - 1)));
+        const nextClock = Math.max(2080, Math.min(2185, prev.clock + Math.floor(Math.random() * 21 - 10)));
+        const nextVram = parseFloat(Math.max(168.0, Math.min(189.5, prev.vram + (Math.random() * 2 - 1))).toFixed(1));
+        return { load: nextLoad, temp: nextTemp, clock: nextClock, vram: nextVram };
+      });
+
+      // 2. Advance active task progress and cycle completed tasks
+      setGrokTasks((prev) => {
+        let next = prev.map((t) => {
+          if (t.status === 'active') {
+            const nextPct = t.pct + Math.floor(Math.random() * 14 + 5);
+            if (nextPct >= 100) {
+              return { ...t, status: 'completed', pct: 100 };
+            }
+            return { ...t, pct: nextPct };
+          }
+          return t;
+        });
+
+        // Cycle completed tasks: replace one completed task with a new queued task
+        const completedCount = next.filter((t) => t.status === 'completed').length;
+        if (completedCount >= 2) {
+          const taskNames = [
+            'Grok-3: Image Gen (Flux)',
+            'agentic-search-retrieval',
+            'constellation-telemetry-dump',
+            'laser-mesh-handshake',
+            'model-distillation-run',
+            'anomaly-collision-detect',
+          ];
+          const randomName = taskNames[Math.floor(Math.random() * taskNames.length)]!;
+          const randomId = '#' + Math.floor(Math.random() * 9000 + 1000);
+
+          const compIdx = next.findIndex((t) => t.status === 'completed');
+          if (compIdx !== -1) {
+            next[compIdx] = { id: randomId, name: randomName, status: 'queued', pct: 0 };
+          }
+        }
+
+        // Activate a queued task if there are fewer than 2 active tasks
+        const activeCount = next.filter((t) => t.status === 'active').length;
+        if (activeCount < 2) {
+          const queuedIdx = next.findIndex((t) => t.status === 'queued');
+          if (queuedIdx !== -1) {
+            next[queuedIdx] = { ...next[queuedIdx]!, status: 'active', pct: Math.floor(Math.random() * 10) };
+          }
+        }
+
+        return next;
+      });
+    }, 1200);
+
+    return () => clearInterval(interval);
+  }, [inspectComponent]);
 
   const chipRefs = useRef<Partial<Record<LabelKey, HTMLDivElement | null>>>({});
   const rowRefs = useRef<Partial<Record<SystemKey, HTMLDivElement | null>>>({});
@@ -394,14 +471,90 @@ export function PartLabels() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-1 mb-2.5">
-              {activeDetail.specs.map((spec, i) => (
-                <div key={i} className="flex justify-between items-baseline py-0.5 border-b border-white/5 font-mono text-[9px]">
-                  <span className="text-dim uppercase tracking-wider">{spec.label}</span>
-                  <span className="text-ink text-right">{spec.value}</span>
+            {inspectComponent === 'compute' ? (
+              <div className="flex flex-col gap-3 my-2 border-b border-t border-white/8 py-2.5">
+                {/* Telemetry Gauges */}
+                <div className="grid grid-cols-2 gap-2 text-[9px] font-mono">
+                  <div className="flex flex-col gap-1 p-1.5 rounded bg-white/4 border border-white/5">
+                    <div className="flex justify-between text-dim uppercase">
+                      <span>GPU LOAD</span>
+                      <span className="text-laser">{gpuStats.load}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-laser transition-all duration-300" style={{ width: `${gpuStats.load}%` }} />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 p-1.5 rounded bg-white/4 border border-white/5">
+                    <div className="flex justify-between text-dim uppercase">
+                      <span>VRAM UTIL</span>
+                      <span className="text-laser">{gpuStats.vram} GB</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-laser transition-all duration-300" style={{ width: `${(gpuStats.vram / 192) * 100}%` }} />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 p-1.5 rounded bg-white/4 border border-white/5">
+                    <div className="flex justify-between text-dim uppercase">
+                      <span>CORE TEMP</span>
+                      <span className={gpuStats.temp > 60 ? 'text-solar font-bold' : 'text-laser'}>{gpuStats.temp}°C</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full transition-all duration-300"
+                        style={{
+                          width: `${(gpuStats.temp / 80) * 100}%`,
+                          backgroundColor: gpuStats.temp > 60 ? 'var(--color-solar)' : 'var(--color-laser)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 p-1.5 rounded bg-white/4 border border-white/5">
+                    <div className="flex justify-between text-dim uppercase">
+                      <span>CLOCK</span>
+                      <span className="text-laser">{gpuStats.clock} MHz</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-laser transition-all duration-300" style={{ width: `${((gpuStats.clock - 2000) / 200) * 100}%` }} />
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Grok Task Board */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-[8px] uppercase tracking-wider text-dim font-bold">ONBOARD GROK QUEUE //</div>
+                  <div className="flex flex-col gap-1 font-mono text-[8.5px]">
+                    {grokTasks.map((task, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-1 rounded bg-black/40 border border-white/5">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="text-faint">{task.id}</span>
+                          <span className="text-ink truncate">{task.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {task.status === 'active' ? (
+                            <>
+                              <span className="text-laser animate-pulse">● {task.pct}%</span>
+                            </>
+                          ) : task.status === 'queued' ? (
+                            <span className="text-dim">QUEUED</span>
+                          ) : (
+                            <span className="text-green-400">DONE</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1 mb-2.5">
+                {activeDetail.specs.map((spec, i) => (
+                  <div key={i} className="flex justify-between items-baseline py-0.5 border-b border-white/5 font-mono text-[9px]">
+                    <span className="text-dim uppercase tracking-wider">{spec.label}</span>
+                    <span className="text-ink text-right">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="text-[9px] leading-relaxed text-dim mb-3">
               {activeDetail.description}

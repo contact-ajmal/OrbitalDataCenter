@@ -318,7 +318,24 @@ export function Starship() {
         Math.floor((run.t - LAUNCH.DEPLOY_START) / LAUNCH.DEPLOY_INTERVAL) + 1,
       );
       while (run.deployed < due) {
-        network.sats.push(makeDeploySat(plan, run.deployed, telemetry.simT, _shipPos));
+        const newSat = makeDeploySat(plan, run.deployed, telemetry.simT, _shipPos);
+        const burnedIdx = network.sats.findIndex((s) => s.burned);
+        if (burnedIdx !== -1) {
+          const s = network.sats[burnedIdx]!;
+          s.burned = false;
+          s.deorbiting = false;
+          s.r = newSat.r;
+          s.plane = newSat.plane;
+          s.slot = newSat.slot;
+          s.raan = newSat.raan;
+          s.inc = newSat.inc;
+          s.phase = newSat.phase;
+          s.deployFrom = newSat.deployFrom;
+          s.deployT = newSat.deployT;
+          toast(`REPLACED BURNED SAT-${burnedIdx} WITH NEW DEPLOYMENT`);
+        } else {
+          network.sats.push(newSat);
+        }
         run.deployed++;
       }
       launch.deployed = run.deployed;
@@ -348,7 +365,7 @@ export function Starship() {
           network.adj = adj;
           network.count = network.sats.length;
           const st = useSimStore.getState();
-          st.setSatCount(run.prevSatCount + LAUNCH.DEPLOY_COUNT);
+          st.setSatCount(network.sats.length);
           st.setViewMode(run.prevView);
           toast('+60 SATS · +7.2 MW · 129 T DELIVERED TO LEO · BOOSTER CAUGHT');
           launchTally.count++;

@@ -15,6 +15,8 @@ export type Sat = {
   r: number;
   deployFrom?: [number, number, number];
   deployT?: number;
+  deorbiting?: boolean;
+  burned?: boolean;
 };
 
 /** Mean angular rate (rad / sim-second) shared by every satellite. */
