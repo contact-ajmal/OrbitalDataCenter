@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import {
+  AdditiveBlending,
   CanvasTexture,
   Color,
   Group,
   Matrix4,
+  Mesh,
   Quaternion,
   RepeatWrapping,
   SRGBColorSpace,
@@ -18,6 +20,7 @@ import { telemetry } from '../state/telemetry';
 import { useSimStore } from '../state/sim';
 import { heroGroupRef, labelState, type LabelKey } from '../state/labels';
 import { useUiStore } from '../state/ui';
+import { network } from '../state/network';
 
 // Local anchor points (hero space) — must match the geometry below.
 const ANCHORS: Record<LabelKey | 'tipL' | 'tipR', Vector3> = {
@@ -228,6 +231,16 @@ export function HeroSat() {
   const activeComponent = inspectComponent || hoveredComponent;
   const hasActive = activeComponent !== null;
 
+  const rcsRefs = [
+    useRef<Mesh>(null),
+    useRef<Mesh>(null),
+    useRef<Mesh>(null),
+    useRef<Mesh>(null),
+  ];
+  const wingLGroupRef = useRef<Group>(null);
+  const wingRGroupRef = useRef<Group>(null);
+  const curWingAngle = useRef(0);
+
   const isBusActive = activeComponent === 'bus';
   const isComputeActive = activeComponent === 'compute';
   const isWingActive = activeComponent === 'wing';
@@ -265,7 +278,7 @@ export function HeroSat() {
     };
   }, []);
 
-  useFrame((state) => {
+  useFrame((state, dt) => {
     const group = groupRef.current;
     if (!group) return;
     const st = useSimStore.getState();
@@ -339,6 +352,46 @@ export function HeroSat() {
     const time = state.clock.getElapsedTime();
     const pulse = 1.3 + Math.sin(time * 8) * 0.4; // pulse between 0.9 and 1.7
 
+    // 1. Solar array swivelling to track the Sun (or lay flat during eclipse)
+    const adcsActive = useUiStore.getState().adcsActive;
+    const eclipsed = telemetry.eclipsed[i] === 1;
+    const sat = network.sats[i];
+    const isLowPower = !!(sat && (sat as any).lowPower);
+
+    // Project world sun vector to local tangent frame of sat:
+    const localSunY = _sun.dot(_y);
+    const localSunZ = _sun.dot(_z);
+    const targetAngle = eclipsed ? 0 : Math.atan2(localSunZ, localSunY);
+    
+    // Smooth transition
+    curWingAngle.current += (targetAngle - curWingAngle.current) * Math.min(1.0, dt * 5.0);
+    
+    if (wingLGroupRef.current) wingLGroupRef.current.rotation.x = curWingAngle.current;
+    if (wingRGroupRef.current) wingRGroupRef.current.rotation.x = curWingAngle.current;
+
+    // 2. ADCS RCS thruster firing plumes animation
+    const tSec = state.clock.getElapsedTime();
+    rcsRefs.forEach((ref, rIdx) => {
+      if (ref.current) {
+        if (!adcsActive) {
+          ref.current.scale.set(0, 0, 0);
+          ref.current.visible = false;
+          return;
+        }
+        const phaseOffset = rIdx * 1.5;
+        const isFiring = Math.sin(tSec * 15 + phaseOffset) > 0.5 && Math.cos(tSec * 4 + phaseOffset) > -0.3;
+        
+        if (isFiring) {
+          ref.current.visible = true;
+          const size = 0.5 + Math.random() * 0.8;
+          ref.current.scale.set(size, size * 1.5, size);
+        } else {
+          ref.current.scale.set(0, 0, 0);
+          ref.current.visible = false;
+        }
+      }
+    });
+
     if (busMatRef.current) {
       busMatRef.current.transparent = hasActive;
       busMatRef.current.opacity = isBusActive ? 1.0 : (hasActive ? 0.25 : 1.0);
@@ -356,7 +409,11 @@ export function HeroSat() {
         ref.current.transparent = hasActive;
         ref.current.opacity = isWingActive ? 1.0 : (hasActive ? 0.25 : 1.0);
         ref.current.emissive.set(isWingActive ? '#52d7ff' : '#0a1c4a');
-        ref.current.emissiveIntensity = isWingActive ? pulse : (hasActive ? 0.1 : 0.5);
+        let intensity = isWingActive ? pulse : (hasActive ? 0.1 : 0.5);
+        if (isLowPower) {
+          intensity *= 0.15; // Dimmed when low power
+        }
+        ref.current.emissiveIntensity = intensity;
       }
     };
     updateWingMat(wingMatRef1);
@@ -463,28 +520,31 @@ export function HeroSat() {
       {/* solar wings + yoke arm + hinge drum */}
       {([-1.6, 1.6] as const).map((wx, idx) => (
         <group key={wx}>
-          <mesh
-            position={[wx, 0.02, 0]}
-            onClick={(e) => {
-              e.stopPropagation();
-              setInspectComponent(inspectComponent === 'wing' ? null : 'wing');
-            }}
-            onPointerOver={(e) => {
-              e.stopPropagation();
-              setHoveredComponent('wing');
-            }}
-            onPointerOut={() => setHoveredComponent(null)}
-          >
-            <boxGeometry args={[2.6, 0.04, 1.1]} />
-            <meshStandardMaterial
-              ref={idx === 0 ? wingMatRef1 : wingMatRef2}
-              map={solarTex}
-              emissive={wingEmissive}
-              emissiveIntensity={0.5}
-              metalness={0.3}
-              roughness={0.5}
-            />
-          </mesh>
+          {/* rotating solar panel group */}
+          <group ref={idx === 0 ? wingLGroupRef : wingRGroupRef} position={[wx, 0.02, 0]}>
+            <mesh
+              position={[0, 0, 0]}
+              onClick={(e) => {
+                e.stopPropagation();
+                setInspectComponent(inspectComponent === 'wing' ? null : 'wing');
+              }}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                setHoveredComponent('wing');
+              }}
+              onPointerOut={() => setHoveredComponent(null)}
+            >
+              <boxGeometry args={[2.6, 0.04, 1.1]} />
+              <meshStandardMaterial
+                ref={idx === 0 ? wingMatRef1 : wingMatRef2}
+                map={solarTex}
+                emissive={wingEmissive}
+                emissiveIntensity={0.5}
+                metalness={0.3}
+                roughness={0.5}
+              />
+            </mesh>
+          </group>
           {/* yoke arm */}
           <mesh
             position={[wx * 0.2, 0.02, 0]}
@@ -728,6 +788,64 @@ export function HeroSat() {
           side={2}
           transparent={hasActive}
           opacity={isBusActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+        />
+      </mesh>
+
+      {/* ADCS RCS thruster firing plumes */}
+      <mesh
+        ref={rcsRefs[0]}
+        position={[-0.38, 0.2, 0.35]}
+        rotation={[0, 0, Math.PI / 2]}
+        visible={false}
+      >
+        <coneGeometry args={[0.03, 0.16, 8]} />
+        <meshBasicMaterial
+          color="#52d7ff"
+          transparent
+          opacity={0.8}
+          blending={AdditiveBlending}
+        />
+      </mesh>
+      <mesh
+        ref={rcsRefs[1]}
+        position={[0.38, 0.2, 0.35]}
+        rotation={[0, 0, -Math.PI / 2]}
+        visible={false}
+      >
+        <coneGeometry args={[0.03, 0.16, 8]} />
+        <meshBasicMaterial
+          color="#52d7ff"
+          transparent
+          opacity={0.8}
+          blending={AdditiveBlending}
+        />
+      </mesh>
+      <mesh
+        ref={rcsRefs[2]}
+        position={[-0.38, 0.2, -0.35]}
+        rotation={[0, 0, Math.PI / 2]}
+        visible={false}
+      >
+        <coneGeometry args={[0.03, 0.16, 8]} />
+        <meshBasicMaterial
+          color="#52d7ff"
+          transparent
+          opacity={0.8}
+          blending={AdditiveBlending}
+        />
+      </mesh>
+      <mesh
+        ref={rcsRefs[3]}
+        position={[0.38, 0.2, -0.35]}
+        rotation={[0, 0, -Math.PI / 2]}
+        visible={false}
+      >
+        <coneGeometry args={[0.03, 0.16, 8]} />
+        <meshBasicMaterial
+          color="#52d7ff"
+          transparent
+          opacity={0.8}
+          blending={AdditiveBlending}
         />
       </mesh>
     </group>

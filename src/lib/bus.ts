@@ -13,6 +13,8 @@ export type BusEvents = {
   'asset:loaded': string;
   /** Request a PNG snapshot of the canvas (payload = timestamp). */
   snapshot: number;
+  /** Trigger an ASAT kinetic strike on a specific satellite index */
+  'asat:trigger': number;
 };
 
 type Handler<E extends keyof BusEvents> = (payload: BusEvents[E]) => void;

@@ -334,6 +334,32 @@ export function Constellation() {
       // either condition excludes from the sunlit count (no double-subtract)
       if (!ecl && !stormHit) sunlit++;
 
+      // Battery Eclipse operations: drain in shadow, charge in sunlight
+      let charge = telemetry.satBatteries[i] ?? 1.0;
+      if (ecl) {
+        charge = Math.max(0.0, charge - 0.08 * sdt * w);
+      } else {
+        charge = Math.min(1.0, charge + 0.15 * sdt * w);
+      }
+      telemetry.satBatteries[i] = charge;
+
+      // Low power mode entry and recovery
+      if (charge <= 0.0 && !s.lowPower) {
+        s.lowPower = true;
+        toast(`⚠ BATTERY DEPLETED — SAT-${i} ENTERING LOW POWER MODE`);
+        // Rebuild links
+        const { pairs, adj } = buildLinks(sats);
+        network.pairs = pairs;
+        network.adj = adj;
+      } else if (charge >= 0.2 && s.lowPower) {
+        s.lowPower = false;
+        toast(`🔋 BATTERY RECOVERY — SAT-${i} POWER CYCLE COMPLETED`);
+        // Rebuild links
+        const { pairs, adj } = buildLinks(sats);
+        network.pairs = pairs;
+        network.adj = adj;
+      }
+
       // orientation basis: z = radial, x = sun projected onto tangent plane
       _z.copy(_pos).normalize();
       const d = _sun.dot(_z);
@@ -382,6 +408,10 @@ export function Constellation() {
         gc = _stormGlint;
       } else if (ecl) {
         _wingCol.copy(_eclipseCol);
+        gc = _glintDim;
+      } else if (s.lowPower) {
+        // Dimmed wings for low power mode
+        _wingCol.setRGB(0.2, 0.24, 0.35);
         gc = _glintDim;
       } else {
         _wingCol.copy(_white);

@@ -6,7 +6,9 @@ import { network } from '../state/network';
 import { useSimStore } from '../state/sim';
 import { thermalCss } from '../scene/thermalPalette';
 import { buildLinks } from '../sim/links';
-import { toast } from '../lib/bus';
+import { emit, toast } from '../lib/bus';
+import { STATIONS } from '../lib/stations';
+import { useUiStore } from '../state/ui';
 
 const KM_PER_UNIT = 63.71;
 
@@ -21,6 +23,8 @@ type Card = {
   links: number;
   deorbiting: boolean;
   burned: boolean;
+  downlinkStation: number;
+  stationWeather: 'clear' | 'cloudy' | null;
 };
 
 function read(i: number): Card | null {
@@ -32,6 +36,15 @@ function read(i: number): Card | null {
   const eclipsed = telemetry.eclipsed[i] === 1;
   const stormHit = telemetry.stormHit[i] === 1;
   const sat = network.sats[i];
+
+  const downlinkStation = telemetry.satDownlinkStation[i] ?? -1;
+  let stationWeather: 'clear' | 'cloudy' | null = null;
+  if (downlinkStation >= 0) {
+    const weatherSim = useUiStore.getState().weatherSim;
+    const isCloudy = weatherSim && (Math.sin(telemetry.simT * 0.2 + downlinkStation * 1.5) > 0.0);
+    stationWeather = isCloudy ? 'cloudy' : 'clear';
+  }
+
   return {
     plane: sat?.plane ?? 0,
     slot: sat?.slot ?? 0,
@@ -43,6 +56,8 @@ function read(i: number): Card | null {
     links: network.adj[i]?.length ?? 0,
     deorbiting: !!sat?.deorbiting,
     burned: !!sat?.burned,
+    downlinkStation,
+    stationWeather,
   };
 }
 
@@ -175,6 +190,15 @@ export function SatCard() {
         </span>
       </div>
       <Stat label="ISL links" value={card.links} />
+      {card.downlinkStation >= 0 && (
+        <Stat
+          label={card.stationWeather === 'cloudy' ? 'Uplink (Cloudy)' : 'Uplink (Clear)'}
+          value={`${STATIONS[card.downlinkStation]?.name} @ ${
+            card.stationWeather === 'cloudy' ? '100 Mbps RF' : '10 Gbps Laser'
+          }`}
+          accent={card.stationWeather === 'cloudy' ? 'text-orange-400' : 'text-laser'}
+        />
+      )}
 
       <button
         onClick={() => {
@@ -202,23 +226,35 @@ export function SatCard() {
           ☄ Deorbiting...
         </button>
       ) : (
-        <button
-          onClick={() => {
-            const sat = network.sats[i];
-            if (sat) {
-              sat.deorbiting = true;
-              toast(`☄ DEORBIT SEQUENCE INITIATED FOR SAT-${i}`);
-              const { pairs, adj } = buildLinks(network.sats);
-              network.pairs = pairs;
-              network.adj = adj;
-              setCard((prev) => prev ? { ...prev, deorbiting: true } : null);
-            }
-          }}
-          title="Deorbit this satellite (decays altitude and burns up)"
-          className="pointer-events-auto mt-2 w-full rounded border border-orange-500/60 py-1.5 text-[9px] uppercase tracking-[.2em] text-orange-400 transition-colors hover:bg-orange-500/15"
-        >
-          ☄ Deorbit Satellite
-        </button>
+        <>
+          <button
+            onClick={() => {
+              const sat = network.sats[i];
+              if (sat) {
+                sat.deorbiting = true;
+                toast(`☄ DEORBIT SEQUENCE INITIATED FOR SAT-${i}`);
+                const { pairs, adj } = buildLinks(network.sats);
+                network.pairs = pairs;
+                network.adj = adj;
+                setCard((prev) => prev ? { ...prev, deorbiting: true } : null);
+              }
+            }}
+            title="Deorbit this satellite (decays altitude and burns up)"
+            className="pointer-events-auto mt-2 w-full rounded border border-orange-500/60 py-1.5 text-[9px] uppercase tracking-[.2em] text-orange-400 transition-colors hover:bg-orange-500/15 cursor-pointer"
+          >
+            ☄ Deorbit Satellite
+          </button>
+          
+          <button
+            onClick={() => {
+              emit('asat:trigger', i);
+            }}
+            title="Launch a kinetic ASAT missile to destroy this satellite"
+            className="pointer-events-auto mt-2 w-full rounded border border-red-500/60 py-1.5 text-[9px] uppercase tracking-[.2em] text-red-400 transition-colors hover:bg-red-500/15 cursor-pointer"
+          >
+            💥 ASAT Kinetic Strike
+          </button>
+        </>
       )}
     </Panel>
   );

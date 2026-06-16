@@ -81,200 +81,325 @@ export function ControlDock() {
   const toggle = useSimStore((s) => s.toggle);
   const setViewMode = useSimStore((s) => s.setViewMode);
   const setVisionOn = useSimStore((s) => s.setVisionOn);
+  const selectedIdx = useSimStore((s) => s.selectedIdx);
 
   const mobileTab = useUiStore((s) => s.mobileTab);
+  const activeTab = useUiStore((s) => s.activeTab);
+  const setActiveTab = useUiStore((s) => s.setActiveTab);
+  const weatherSim = useUiStore((s) => s.weatherSim);
+  const setWeatherSim = useUiStore((s) => s.setWeatherSim);
+  const adcsActive = useUiStore((s) => s.adcsActive);
+  const setAdcsActive = useUiStore((s) => s.setAdcsActive);
+  
   const show = mobileTab === 'controls';
 
   return (
     <Panel
-      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[420px] max-h-[60vh] overflow-y-auto p-4 flex flex-col gap-4 border-white/15 backdrop-blur-lg transition-all duration-300 z-10 hud:bottom-9 hud:w-auto hud:max-w-none hud:max-h-none hud:overflow-visible hud:flex-row hud:flex-nowrap hud:items-center hud:justify-center hud:gap-x-5 hud:gap-y-3 ${
+      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[480px] max-h-[60vh] overflow-y-auto p-3.5 flex flex-col gap-3.5 border-white/15 backdrop-blur-lg transition-all duration-300 z-10 hud:bottom-9 hud:w-auto hud:max-w-[580px] hud:max-h-none hud:overflow-visible ${
         show ? 'flex' : 'hidden hud:flex'
       }`}
     >
-      <div className="w-full hud:w-[150px] shrink-0">
-        <Slider
-          label="Satellites"
-          min={60}
-          max={2400}
-          step={60}
-          value={satCount}
-          onChange={(v) => {
-            if (roadmapActive) useRoadmapStore.getState().exitManual();
-            setSatCount(v);
-          }}
-          display={satCount.toLocaleString('en-US')}
-        />
-      </div>
-      <div className="w-full hud:w-[130px] shrink-0">
-        <Slider
-          label="Time warp"
-          min={1}
-          max={600}
-          step={1}
-          value={timeWarp}
-          onChange={setTimeWarp}
-          display={`${timeWarp}×`}
-        />
-      </div>
+      {/* 1. Tab Contents */}
+      <div className="flex flex-wrap items-center justify-center gap-3 w-full min-h-[46px]">
+        {activeTab === 'networks' && (
+          <div className="flex flex-wrap items-center justify-between w-full gap-3">
+            <div className="flex flex-col gap-1 shrink-0">
+              <Label>Layers</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {(['lasers', 'downlink', 'orbits', 'starlink', 'traffic', 'heatmap'] as const).map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => toggle(k)}
+                    title={
+                      k === 'lasers'
+                        ? 'Toggle inter-satellite laser communication links'
+                        : k === 'downlink'
+                          ? 'Toggle ground-station data transmission beams'
+                          : k === 'orbits'
+                            ? 'Toggle orbital plane rings'
+                            : k === 'starlink'
+                              ? 'Toggle background Starlink constellation overlay'
+                              : k === 'traffic'
+                                ? 'Toggle global network traffic flows'
+                                : 'Toggle global AI workload demand overlay'
+                    }
+                    className={
+                      'pointer-events-auto rounded border px-2 py-1 text-[9px] uppercase tracking-[.16em] transition-colors cursor-pointer ' +
+                      (toggles[k]
+                        ? 'border-laser/60 bg-laser/15 text-laser'
+                        : 'border-white/10 text-faint hover:text-dim')
+                    }
+                  >
+                    {k}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      <div className="flex flex-col gap-1 shrink-0">
-        <Label>Layers</Label>
-        <div className="flex flex-wrap gap-1.5 hud:flex-nowrap">
-          {(['lasers', 'downlink', 'orbits', 'starlink', 'traffic', 'heatmap'] as const).map((k) => (
+            <div className="flex flex-col gap-1 shrink-0">
+              <Label>Weather</Label>
+              <button
+                onClick={() => {
+                  setWeatherSim(!weatherSim);
+                  toast(
+                    !weatherSim
+                      ? 'WEATHER SIMULATION INITIATED — GROUND CLOUD COVER ACTIVE'
+                      : 'WEATHER SIMULATION TERMINATED — SKY CONDITIONS NOMINAL'
+                  );
+                }}
+                title="Simulate cloud weather interference on ground optical uplinks"
+                className={
+                  'pointer-events-auto rounded border px-2.5 py-1.5 text-[9px] uppercase tracking-[.16em] transition-colors cursor-pointer ' +
+                  (weatherSim
+                    ? 'border-orange-500/60 bg-orange-500/15 text-orange-400'
+                    : 'border-white/10 text-faint hover:text-dim')
+                }
+              >
+                ☁ Weather Sim
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'fleet' && (
+          <div className="flex flex-wrap items-end gap-3.5 w-full justify-between">
+            <div className="w-[120px] shrink-0">
+              <Slider
+                label="Satellites"
+                min={60}
+                max={2400}
+                step={60}
+                value={satCount}
+                onChange={(v) => {
+                  if (roadmapActive) useRoadmapStore.getState().exitManual();
+                  setSatCount(v);
+                }}
+                display={satCount.toLocaleString('en-US')}
+              />
+            </div>
+            <div className="flex flex-col gap-1 shrink-0">
+              <Label>View Mode</Label>
+              <Seg<ViewMode>
+                value={viewMode === 'launch' ? 'overview' : viewMode}
+                onChange={setViewMode}
+                options={[
+                  { label: 'Overview', value: 'overview', title: 'Global constellation overview' },
+                  { label: 'Chase', value: 'chase', title: 'Follow selected satellite in orbit' },
+                  { label: 'Inspect', value: 'inspect', title: 'Detailed interactive satellite model inspector' },
+                ]}
+              />
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => emit('launch:request', 60)}
+                title="Launch a Starship and deploy 60 new satellites into orbit"
+                className="pointer-events-auto rounded border border-white/60 px-2.5 py-1 text-[9px] uppercase tracking-[.18em] text-ink transition-colors cursor-pointer hover:bg-white/10 h-7"
+              >
+                Launch +60
+              </button>
+              <button
+                onClick={() => setVisionOn(!visionOn)}
+                title="Toggle point-cloud representation of the 1,000,000 satellite fleet"
+                className={
+                  'pointer-events-auto rounded border px-2.5 py-1 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer h-7 ' +
+                  (visionOn
+                    ? 'border-laser bg-laser/20 text-laser'
+                    : 'border-white/15 text-dim hover:text-ink')
+                }
+              >
+                10⁶ Vision
+              </button>
+              <button
+                onClick={() => {
+                  setAdcsActive(!adcsActive);
+                  toast(
+                    !adcsActive
+                      ? 'ACTIVE ADCS INITIATED — RCS PLUME SIMULATION ONLINE'
+                      : 'ADCS PLUMES DEACTIVATED'
+                  );
+                }}
+                title="Toggle active attitude determination & control gas thruster visual plumes"
+                className={
+                  'pointer-events-auto rounded border px-2.5 py-1 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer h-7 ' +
+                  (adcsActive
+                    ? 'border-laser/60 bg-laser/15 text-laser'
+                    : 'border-white/15 text-dim hover:text-ink')
+                }
+              >
+                🚀 ADCS Plumes
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'compute' && (
+          <div className="flex flex-wrap items-center justify-center gap-3 w-full">
             <button
-              key={k}
-              onClick={() => toggle(k)}
-              title={
-                k === 'lasers'
-                  ? 'Toggle inter-satellite laser communication links'
-                  : k === 'downlink'
-                    ? 'Toggle ground-station data transmission beams'
-                    : k === 'orbits'
-                      ? 'Toggle orbital plane rings'
-                      : k === 'starlink'
-                        ? 'Toggle background Starlink constellation overlay'
-                        : k === 'traffic'
-                          ? 'Toggle global network traffic flows'
-                          : 'Toggle global AI workload demand overlay'
-              }
+              onClick={() => emit('job:run', 1)}
+              disabled={jobBusy}
+              title="Route a geographic compute packet across the live laser network"
               className={
-                'pointer-events-auto rounded border px-2 py-1 text-[9px] uppercase tracking-[.16em] transition-colors cursor-pointer ' +
-                (toggles[k]
-                  ? 'border-laser/60 bg-laser/15 text-laser'
-                  : 'border-white/10 text-faint hover:text-dim')
+                'pointer-events-auto rounded border px-4 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
+                (jobBusy
+                  ? 'border-white/15 text-faint'
+                  : 'border-solar/70 text-solar hover:bg-solar/15')
               }
             >
-              {k}
+              {jobBusy ? 'Busy…' : 'Run AI Job'}
             </button>
-          ))}
-        </div>
+            <button
+              onClick={() => {
+                if (jobBusy) return;
+                setJobBusy(true);
+                startTraining();
+              }}
+              disabled={jobBusy}
+              title="Simulate federated model training across the satellite constellation"
+              className={
+                'pointer-events-auto rounded border px-4 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
+                (jobBusy
+                  ? 'border-white/15 text-faint'
+                  : 'border-laser/70 text-laser hover:bg-laser/15')
+              }
+            >
+              Train Model (Consensus)
+            </button>
+          </div>
+        )}
+
+        {activeTab === 'hazards' && (
+          <div className="flex flex-wrap items-center justify-between w-full gap-3">
+            <div className="flex flex-col gap-1 w-full">
+              <Label>Constellation Hazards</Label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  onClick={triggerStorm}
+                  className={
+                    'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
+                    (storm.active
+                      ? 'border-solar bg-solar/20 text-solar'
+                      : 'border-white/15 text-dim hover:text-ink')
+                  }
+                  title="Trigger a coronal mass ejection space storm event"
+                >
+                  ☀ Solar Storm
+                </button>
+                <button
+                  onClick={() => triggerConjunction(telemetry.simT)}
+                  className="pointer-events-auto rounded border border-white/15 px-3 py-1.5 text-[9px] uppercase tracking-[.18em] text-dim transition-colors cursor-pointer hover:bg-white/10 hover:text-ink"
+                  title="Trigger a debris conjunction warning avoidance event"
+                >
+                  ⚠ Conjunction Warning
+                </button>
+                <button
+                  onClick={() => {
+                    if (selectedIdx >= 0) {
+                      emit('asat:trigger', selectedIdx);
+                    }
+                  }}
+                  disabled={selectedIdx < 0}
+                  className={
+                    'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
+                    (selectedIdx >= 0
+                      ? 'border-red-500/60 text-red-400 hover:bg-red-500/15'
+                      : 'border-white/10 text-faint cursor-not-allowed')
+                  }
+                  title={selectedIdx >= 0 ? "Launch a kinetic ASAT missile to destroy the selected satellite" : "Select a satellite first to trigger ASAT strike"}
+                >
+                  💥 ASAT Kinetic Strike
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'system' && (
+          <div className="flex flex-wrap items-end gap-3.5 w-full justify-between">
+            <div className="w-[100px] shrink-0">
+              <Slider
+                label="Time warp"
+                min={1}
+                max={600}
+                step={1}
+                value={timeWarp}
+                onChange={setTimeWarp}
+                display={`${timeWarp}×`}
+              />
+            </div>
+            <div className="flex flex-col gap-1 shrink-0">
+              <Label>System Utilities</Label>
+              <div className="flex flex-wrap gap-1">
+                <UtilBtn glyph="⟲" onClick={requestReset} title="Reset view (R)" />
+                <UtilBtn
+                  glyph={paused ? '▶' : '⏸'}
+                  on={paused}
+                  onClick={togglePaused}
+                  title="Pause / resume"
+                />
+                <UtilBtn glyph="📷" onClick={() => emit('snapshot', Date.now())} title="Snapshot" />
+                <UtilBtn glyph="$" on={econOpen} onClick={toggleEcon} title="Economics" />
+                <UtilBtn glyph="🗓" on={roadmapActive} onClick={toggleRoadmap} title="Roadmap timeline" />
+                <UtilBtn
+                  glyph="🌡"
+                  on={thermal}
+                  onClick={() => {
+                    if (!thermal) toast('THERMAL VIEW — RADIATOR EMISSION FALSE COLOR');
+                    toggleThermal();
+                  }}
+                  title="Thermal / IR view"
+                />
+                <UtilBtn
+                  glyph="🎬"
+                  on={tour.active}
+                  onClick={() => (tour.active ? stopTour(true) : startTour())}
+                  title="Cinematic tour"
+                />
+                <UtilBtn glyph="🔊" on={isAudioOn()} onClick={toggleAudio} title="Soft Music" />
+                <UtilBtn
+                  glyph="⚡"
+                  on={lowGraphics}
+                  onClick={() => {
+                    toggleLowGraphics();
+                    toast(
+                      !lowGraphics
+                        ? 'PERFORMANCE MODE ACTIVE — 1X RESOLUTION, POST-PROCESSING BYPASSED'
+                        : 'HIGH QUALITY ACTIVE — BLOOM & HDR ENABLED'
+                    );
+                  }}
+                  title={lowGraphics ? 'Switch to High Quality Graphics' : 'Switch to High Performance Mode'}
+                />
+                <UtilBtn glyph="📸" onClick={() => setPhotoMode(true)} title="Photo mode" />
+                <UtilBtn
+                  glyph="🔗"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(currentShareUrl()).then(
+                      () => toast('LINK COPIED'),
+                      () => toast('COPY FAILED — SELECT THE URL MANUALLY'),
+                    );
+                  }}
+                  title="Share view"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-col gap-1 shrink-0">
-        <Label>View</Label>
-        <Seg<ViewMode>
-          value={viewMode === 'launch' ? 'overview' : viewMode}
-          onChange={setViewMode}
-          options={[
-            { label: 'Overview', value: 'overview', title: 'Global constellation overview' },
-            { label: 'Chase', value: 'chase', title: 'Follow selected satellite in orbit' },
-            { label: 'Inspect', value: 'inspect', title: 'Detailed interactive satellite model inspector' },
-          ]}
-        />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 w-full shrink-0 hud:w-auto hud:flex-nowrap hud:items-end">
-        <button
-          onClick={() => emit('job:run', 1)}
-          disabled={jobBusy}
-          title="Route a geographic compute packet across the live laser network"
-          className={
-            'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
-            (jobBusy
-              ? 'border-white/15 text-faint'
-              : 'border-solar/70 text-solar hover:bg-solar/15')
-          }
-        >
-          {jobBusy ? 'Busy…' : 'Run AI Job'}
-        </button>
-        <button
-          onClick={() => {
-            if (jobBusy) return;
-            setJobBusy(true);
-            startTraining();
-          }}
-          disabled={jobBusy}
-          title="Simulate federated model training across the satellite constellation"
-          className={
-            'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
-            (jobBusy
-              ? 'border-white/15 text-faint'
-              : 'border-laser/70 text-laser hover:bg-laser/15')
-          }
-        >
-          Train Model
-        </button>
-        <button
-          onClick={() => emit('launch:request', 60)}
-          title="Launch a Starship and deploy 60 new satellites into orbit"
-          className="pointer-events-auto rounded border border-white/60 px-3 py-1.5 text-[9px] uppercase tracking-[.18em] text-ink transition-colors cursor-pointer hover:bg-white/10"
-        >
-          Launch +60
-        </button>
-        <button
-          onClick={() => setVisionOn(!visionOn)}
-          title="Toggle point-cloud representation of the 1,000,000 satellite fleet"
-          className={
-            'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
-            (visionOn
-              ? 'border-laser bg-laser/20 text-laser'
-              : 'border-white/15 text-dim hover:text-ink')
-          }
-        >
-          10⁶ Vision
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-1 shrink-0">
-        <Label>Utility</Label>
-        <div className="flex flex-wrap gap-1.5 hud:flex-nowrap">
-          <UtilBtn glyph="⟲" onClick={requestReset} title="Reset view (R)" />
-          <UtilBtn
-            glyph={paused ? '▶' : '⏸'}
-            on={paused}
-            onClick={togglePaused}
-            title="Pause / resume"
-          />
-          <UtilBtn glyph="📷" onClick={() => emit('snapshot', Date.now())} title="Snapshot" />
-          <UtilBtn glyph="$" on={econOpen} onClick={toggleEcon} title="Economics" />
-          <UtilBtn glyph="🗓" on={roadmapActive} onClick={toggleRoadmap} title="Roadmap timeline" />
-          <UtilBtn
-            glyph="🌡"
-            on={thermal}
-            onClick={() => {
-              if (!thermal) toast('THERMAL VIEW — RADIATOR EMISSION FALSE COLOR');
-              toggleThermal();
-            }}
-            title="Thermal / IR view"
-          />
-          <UtilBtn glyph="☀" on={storm.active} onClick={triggerStorm} title="Solar storm" />
-          <UtilBtn
-            glyph="⚠"
-            onClick={() => triggerConjunction(telemetry.simT)}
-            title="Conjunction event"
-          />
-          <UtilBtn
-            glyph="🎬"
-            on={tour.active}
-            onClick={() => (tour.active ? stopTour(true) : startTour())}
-            title="Cinematic tour"
-          />
-          <UtilBtn glyph="🔊" on={isAudioOn()} onClick={toggleAudio} title="Soft Music" />
-          <UtilBtn
-            glyph="⚡"
-            on={lowGraphics}
-            onClick={() => {
-              toggleLowGraphics();
-              toast(
-                !lowGraphics
-                  ? 'PERFORMANCE MODE ACTIVE — 1X RESOLUTION, POST-PROCESSING BYPASSED'
-                  : 'HIGH QUALITY ACTIVE — BLOOM & HDR ENABLED'
-              );
-            }}
-            title={lowGraphics ? 'Switch to High Quality Graphics' : 'Switch to High Performance Mode'}
-          />
-          <UtilBtn glyph="📸" onClick={() => setPhotoMode(true)} title="Photo mode" />
-          <UtilBtn
-            glyph="🔗"
-            onClick={() => {
-              navigator.clipboard?.writeText(currentShareUrl()).then(
-                () => toast('LINK COPIED'),
-                () => toast('COPY FAILED — SELECT THE URL MANUALLY'),
-              );
-            }}
-            title="Share view"
-          />
-        </div>
+      {/* 2. Category Tab Selector Bar */}
+      <div className="flex border-t border-white/8 pt-2 justify-around items-center w-full gap-1">
+        {(['networks', 'fleet', 'compute', 'hazards', 'system'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-2 py-1 text-[9px] uppercase font-bold tracking-[.15em] transition-all cursor-pointer rounded-sm border-b-2 ${
+              activeTab === tab
+                ? 'text-laser border-laser'
+                : 'text-faint border-transparent hover:text-dim'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
     </Panel>
   );

@@ -23,4 +23,16 @@ export const telemetry = {
   /** Chased/hero satellite world position + sun-facing orientation. */
   heroPos: new Float32Array(3),
   heroQuat: new Float32Array(4),
+  /** Battery charge level (0.0 to 1.0) per satellite. */
+  satBatteries: (() => {
+    const arr = new Float32Array(SCENE.MAX_SATS);
+    arr.fill(1.0);
+    return arr;
+  })(),
+  /** The ground station index (0..3) this satellite is downlinking to, or -1. */
+  satDownlinkStation: (() => {
+    const arr = new Int8Array(SCENE.MAX_SATS);
+    arr.fill(-1);
+    return arr;
+  })(),
 };

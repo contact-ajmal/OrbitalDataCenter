@@ -19,6 +19,16 @@ type UiState = {
   hoveredComponent: SystemKey | null;
   setInspectComponent: (c: SystemKey | null) => void;
   setHoveredComponent: (c: SystemKey | null) => void;
+  
+  // Category tabs & weather/ADCS states
+  activeTab: 'networks' | 'fleet' | 'compute' | 'hazards' | 'system';
+  weatherSim: boolean;
+  adcsActive: boolean;
+  weatherStates: ('clear' | 'cloudy')[];
+  setActiveTab: (t: 'networks' | 'fleet' | 'compute' | 'hazards' | 'system') => void;
+  setWeatherSim: (v: boolean) => void;
+  setAdcsActive: (v: boolean) => void;
+  setWeatherStates: (s: ('clear' | 'cloudy')[]) => void;
 };
 
 export const useUiStore = create<UiState>((set) => ({
@@ -35,5 +45,14 @@ export const useUiStore = create<UiState>((set) => ({
   hoveredComponent: null,
   setInspectComponent: (inspectComponent) => set({ inspectComponent }),
   setHoveredComponent: (hoveredComponent) => set({ hoveredComponent }),
+
+  activeTab: 'networks',
+  weatherSim: false,
+  adcsActive: false,
+  weatherStates: ['clear', 'clear', 'clear', 'clear'],
+  setActiveTab: (activeTab) => set({ activeTab }),
+  setWeatherSim: (weatherSim) => set({ weatherSim }),
+  setAdcsActive: (adcsActive) => set({ adcsActive }),
+  setWeatherStates: (weatherStates) => set({ weatherStates }),
 }));
 

@@ -14,6 +14,7 @@ import { VisionShell } from './VisionShell';
 import { StarlinkOverlay } from './StarlinkOverlay';
 import { TrainingViz } from './TrainingViz';
 import { DebrisEvent } from './DebrisEvent';
+import { AsatDebris } from './AsatDebris';
 import { HeroSat } from './HeroSat';
 import { Starship } from './Starship';
 import { Picker } from './Picker';
@@ -51,6 +52,7 @@ export function Scene() {
       <JobRouter />
       <TrainingViz />
       <DebrisEvent />
+      <AsatDebris />
       <VisionShell />
       <HeroSat />
       <Starship />
