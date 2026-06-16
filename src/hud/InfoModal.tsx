@@ -12,8 +12,10 @@ import {
 } from '../lib/projectInfo';
 import { SHORTCUTS } from '../lib/shortcuts';
 import { CreditsTab } from './CreditsTab';
+import { useSimStore } from '../state/sim';
 
 const TABS: { key: InfoTab; label: string }[] = [
+  { key: 'guide', label: 'Docs' },
   { key: 'mission', label: 'Mission' },
   { key: 'vehicle', label: 'Vehicle' },
   { key: 'how', label: 'How it works' },
@@ -29,7 +31,92 @@ function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 function Content({ tab }: { tab: InfoTab }) {
+  const shieldActive = useSimStore((s) => s.shieldActive);
+  const qkdActive = useSimStore((s) => s.qkdActive);
+
   switch (tab) {
+    case 'guide':
+      return (
+        <div className="space-y-5 text-[11px] leading-relaxed text-dim">
+          <div>
+            <SectionTitle>Space Compute Hardware</SectionTitle>
+            <p className="mb-2">
+              The SpaceX AI1 space compute satellite hosts a liquid-cooled NVIDIA Rubin / GB300 GPU node inside Low Earth Orbit (LEO), designed for space-based federated model weight training and transcontinental packet routing.
+            </p>
+            <div className="overflow-hidden rounded border border-white/8 mb-3">
+              {VEHICLE_SPECS.map((s, idx) => (
+                <div key={s.label} className={`flex items-baseline justify-between gap-3 px-3 py-1.5 ${idx % 2 ? 'bg-white/3' : ''}`}>
+                  <span className="text-[9px] uppercase tracking-[.14em] text-dim">{s.label}</span>
+                  <span className="font-mono text-[10px] tabular-nums text-ink">{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <SectionTitle>Simulation Physics & Solar Tracking</SectionTitle>
+            <p className="mb-2">
+              The Earth is wrapped in a custom 3D shader detailing terminators, topography, specular water glints, and city workloads.
+            </p>
+            <ul className="list-disc list-inside space-y-1 pl-1">
+              <li>
+                <span className="text-ink font-semibold">Solar Tracking:</span> Satellite arrays rotate on their yoke axes to stay perpendicular to the sun vector.
+              </li>
+              <li>
+                <span className="text-ink font-semibold">Eclipse Operations:</span> Eclipsed satellites experience battery discharge at <span className="text-solar">-8%/s</span>. Solar panels lay flat to minimize drag. Empty batteries trigger <span className="text-orange-400">Low Power Mode</span>.
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <SectionTitle>Advanced Network Enhancements</SectionTitle>
+            <ul className="list-disc list-inside space-y-1.5 pl-1">
+              <li>
+                <span className="text-ink font-semibold">📡 Lunar Deep-Space Relay:</span> Tracks Moon coordinates and routes telemetry to select the optimal line-of-sight satellite, casting a thick violet laser.
+              </li>
+              <li>
+                <span className="text-ink font-semibold">🧲 Van Allen Radiation Belt:</span> Volumetric toroidal field. Satellites passing through experience Single Event Upsets (SEUs), causing connected lasers to flicker magenta/purple.
+              </li>
+              <li>
+                <span className="text-ink font-semibold">🛡 Deflector Shields:</span> Breathing cyan geodesic forcefield around the satellite. Deflects radiation, preventing SEU faults. <span className="font-semibold text-laser">[{shieldActive ? "ONLINE" : "OFFLINE"}]</span>
+              </li>
+              <li>
+                <span className="text-ink font-semibold">🔑 QKD Encryption:</span> Upgrades lasers to quantum-entangled neon-emerald green links with double-speed data packet flows. <span className="font-semibold text-ok">[{qkdActive ? "ACTIVE" : "INACTIVE"}]</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <SectionTitle>Sandbox Hazards & Deorbits</SectionTitle>
+            <ul className="list-disc list-inside space-y-1.5 pl-1">
+              <li>
+                <span className="text-ink font-semibold">☀ Solar Storm:</span> Orange CME solar wind flows across orbit space, creating glowing green auroral rings at the magnetic poles.
+              </li>
+              <li>
+                <span className="text-ink font-semibold">⚠ Conjunctions:</span> Satellites perform active gas-plume avoidance maneuvers to dodge orbital debris.
+              </li>
+              <li>
+                <span className="text-ink font-semibold">💥 ASAT Missile Intercept:</span> Kinetic strike launched from Starbase, TX. Spawns 60 Keplerian-drifting debris particles that stretch into a ring.
+              </li>
+              <li>
+                <span className="text-ink font-semibold">☄ Deorbits:</span> Satellite altitude decays towards Earth, trailing orange-red friction plasma until burn-up.
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <SectionTitle>Cheatsheet Reference</SectionTitle>
+            <div className="grid grid-cols-2 gap-y-1.5 gap-x-3 bg-white/3 p-2.5 rounded border border-white/8 font-mono text-[10px]">
+              <div><span className="text-laser">Space</span> - Pause/Resume</div>
+              <div><span className="text-laser">R</span> - Reset Camera</div>
+              <div><span className="text-laser">1 / 2 / 3</span> - Views</div>
+              <div><span className="text-laser">L</span> - Starship Launch</div>
+              <div><span className="text-laser">J</span> - Run AI Job</div>
+              <div><span className="text-laser">T</span> - Tour Toggle</div>
+            </div>
+          </div>
+        </div>
+      );
     case 'mission':
       return (
         <div className="space-y-3">

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type InfoTab = 'mission' | 'vehicle' | 'how' | 'data' | 'controls' | 'credits';
+export type InfoTab = 'mission' | 'vehicle' | 'how' | 'data' | 'controls' | 'credits' | 'guide';
 export type MobileTab = 'none' | 'telemetry' | 'controls' | 'econ';
 export type SystemKey = 'wing' | 'radiator' | 'compute' | 'bus' | 'laser';
 
@@ -33,7 +33,7 @@ type UiState = {
 
 export const useUiStore = create<UiState>((set) => ({
   infoOpen: false,
-  infoTab: 'mission',
+  infoTab: 'guide',
   openInfo: (tab) => set(tab ? { infoOpen: true, infoTab: tab } : { infoOpen: true }),
   closeInfo: () => set({ infoOpen: false }),
   setInfoTab: (infoTab) => set({ infoTab }),
