@@ -57,32 +57,20 @@ function startAmbient() {
   if (ambient || !ctx || !master) return;
   const c = ctx;
 
-  // Background hum - extremely quiet and subtle
-  const noise = noiseBuffer(c);
-  const humFilter = c.createBiquadFilter();
-  humFilter.type = 'lowpass';
-  humFilter.frequency.value = 180; // deeper space rumble
-  const humGain = c.createGain();
-  humGain.gain.value = 0.003; // reduced from 0.012 for a cleaner mix
-  noise.connect(humFilter);
-  humFilter.connect(humGain);
-  humGain.connect(master);
-  noise.start();
-
-  // Create a filter for the synth pad to make it warm and soft
+  // Create a filter for the synth pad to make it warm, light, and soft
   const padFilter = c.createBiquadFilter();
   padFilter.type = 'lowpass';
-  padFilter.frequency.value = 260; // lowered cutoff for a warmer, rounder tone
+  padFilter.frequency.value = 650; // raised cutoff for light, airy tones
   padFilter.connect(master);
 
   // Set up the feedback delay nodes for rich, spacious, reverb-like space ambient echo
   const delay = c.createDelay(2.0);
-  delay.delayTime.value = 0.8; // 800ms delay for deep cosmic space echo
+  delay.delayTime.value = 1.0; // 1-second delay for a spacious celestial echo tail
   const delayGain = c.createGain();
-  delayGain.gain.value = 0.35; // feedback echo volume
+  delayGain.gain.value = 0.40; // feedback echo volume
   const delayFilter = c.createBiquadFilter();
   delayFilter.type = 'lowpass';
-  delayFilter.frequency.value = 350; // filters echo high frequencies to keep it dark
+  delayFilter.frequency.value = 750; // filters echo high frequencies slightly to keep them warm
 
   padFilter.connect(delay);
   delay.connect(delayFilter);
@@ -90,11 +78,11 @@ function startAmbient() {
   delayGain.connect(delay); // feedback loop
   delayGain.connect(master);
 
-  // Slowly modulate filter cutoff with an LFO for movement (warmer sweep range)
+  // Slowly modulate filter cutoff with an LFO for light movement
   const lfo = c.createOscillator();
-  lfo.frequency.value = 0.03; // slower 33s sweep
+  lfo.frequency.value = 0.025; // slow 40s sweep
   const lfoGain = c.createGain();
-  lfoGain.gain.value = 80; // sweep between 180Hz and 340Hz
+  lfoGain.gain.value = 150; // sweep between 500Hz and 800Hz
   lfo.connect(lfoGain);
   lfoGain.connect(padFilter.frequency);
   lfo.start();
@@ -102,16 +90,16 @@ function startAmbient() {
   let activeNotes: { osc: OscillatorNode; gain: GainNode }[] = [];
 
   const chords = [
-    // Dbmaj9: Db2, Ab2, F3, C4, Eb4 (lush, floating)
-    [69.30, 103.83, 174.61, 261.63, 311.13],
-    // Abadd9: Ab2, Eb3, Bb3, C4, G4 (warm, wide)
-    [103.83, 155.56, 233.08, 261.63, 392.00],
-    // Fm9: F2, C3, Ab3, Eb4, G4 (mysterious space)
-    [87.31, 130.81, 207.65, 311.13, 392.00],
-    // Gbmaj9#11: Gb2, Db3, F3, Bb3, C4, F4 (cinematic lift)
-    [92.50, 138.59, 174.61, 233.08, 261.63, 349.23],
-    // Bbm9: Bb2, F3, Ab3, Db4, C5 (deep resolution)
-    [116.54, 174.61, 207.65, 277.18, 523.25]
+    // Dbmaj9 (transposed up 1 octave): Db3, Ab3, F4, C5, Eb5 (airy, crystal)
+    [138.59, 207.65, 349.23, 523.25, 622.25],
+    // Abadd9 (transposed up 1 octave): Ab3, Eb4, Bb4, C5, G5 (soothing, floating)
+    [207.65, 311.13, 466.16, 523.25, 783.99],
+    // Fm9 (transposed up 1 octave): F3, C4, Ab4, Eb5, G5 (peaceful space)
+    [174.61, 261.63, 415.30, 622.25, 783.99],
+    // Gbmaj9#11 (transposed up 1 octave): Gb3, Db4, F4, Bb4, C5, F5 (dreamy shimmer)
+    [185.00, 277.18, 349.23, 466.16, 523.25, 698.46],
+    // Bbm9 (transposed up 1 octave): Bb3, F4, Ab4, Db5, C6 (deep, pure resolution)
+    [233.08, 349.23, 415.30, 554.37, 1046.50]
   ];
   let currentChordIdx = 0;
 
@@ -137,13 +125,13 @@ function startAmbient() {
     // Fade in new notes with organic staggered attack swells
     notes.forEach((freq, i) => {
       const osc = c.createOscillator();
-      osc.type = 'triangle'; // triangle is warm and soft
-      osc.frequency.value = freq + (Math.random() - 0.5) * 0.8; // organic detune for chorus effect
+      osc.type = 'sine'; // sine waves are pure, soft, and soothing (no humming/buzzing)
+      osc.frequency.value = freq + (Math.random() - 0.5) * 0.5; // organic detune for clean chorus effect
       
       const gain = c.createGain();
       gain.gain.setValueAtTime(0.0001, now);
-      const noteVol = 0.022 - (i * 0.0025); // quieter note volume for a soft backdrop
-      gain.gain.exponentialRampToValueAtTime(noteVol, now + 4.5 + i * 0.4); // slower, smoother attack swells
+      const noteVol = 0.016 - (i * 0.0018); // very soft, ear-soothing volume levels
+      gain.gain.exponentialRampToValueAtTime(noteVol, now + 4.5 + i * 0.4); // slow, smooth attack swells
 
       osc.connect(gain);
       gain.connect(padFilter);
@@ -159,7 +147,6 @@ function startAmbient() {
   ambient = () => {
     clearInterval(interval);
     try {
-      noise.stop();
       lfo.stop();
     } catch {
       /* ignore */
