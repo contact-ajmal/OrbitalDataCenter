@@ -8,12 +8,15 @@ import {
   SpriteMaterial,
   AdditiveBlending,
   Vector3,
+  Mesh,
   type Texture,
 } from 'three';
+import { Html } from '@react-three/drei';
 import { NOMINAL_WARP, SCENE, SCENE_COLORS, SUN_DIR } from '../lib/constants';
 import { loadTexture } from '../lib/textures';
 import { emit } from '../lib/bus';
 import { useSimStore } from '../state/sim';
+import { telemetry } from '../state/telemetry';
 
 const SUN_HAT = new Vector3(SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]).normalize();
 const LIGHT_POS = SUN_HAT.clone().multiplyScalar(800);
@@ -60,7 +63,10 @@ function SunGlow() {
 
 function Moon() {
   const pivotRef = useRef<Group>(null);
+  const domeRef = useRef<Mesh>(null);
   const [tex, setTex] = useState<Texture | null>(null);
+
+  const domeWorldPos = useMemo(() => new Vector3(), []);
 
   useEffect(() => {
     let alive = true;
@@ -80,15 +86,42 @@ function Moon() {
     const sdt = st.paused ? 0 : dt;
     const w = st.timeWarp / NOMINAL_WARP;
     if (pivotRef.current) pivotRef.current.rotation.y += sdt * MOON_RATE * w;
+
+    if (domeRef.current) {
+      domeRef.current.getWorldPosition(domeWorldPos);
+      telemetry.moonWorld[0] = domeWorldPos.x;
+      telemetry.moonWorld[1] = domeWorldPos.y;
+      telemetry.moonWorld[2] = domeWorldPos.z;
+    }
   });
 
-  if (!tex) return null;
   return (
     <group rotation={[MOON_TILT, 0, 0]}>
       <group ref={pivotRef}>
         <mesh position={[MOON_DIST, 0, 0]}>
           <sphereGeometry args={[MOON_RADIUS, 48, 48]} />
-          <meshStandardMaterial map={tex} roughness={0.95} metalness={0} />
+          <meshStandardMaterial
+            map={tex || undefined}
+            color={tex ? undefined : '#555555'}
+            roughness={0.95}
+            metalness={0}
+          />
+          {/* Artemis Base Dome on Moon surface facing Earth */}
+          <group position={[-MOON_RADIUS, 0, 0]}>
+            <mesh ref={domeRef} rotation={[0, 0, Math.PI / 2]}>
+              <sphereGeometry args={[MOON_RADIUS * 0.12, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+              <meshBasicMaterial color="#c084fc" transparent opacity={0.8} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[0, MOON_RADIUS * 0.18, 32]} />
+              <meshBasicMaterial color="#a78bfa" transparent opacity={0.25} depthWrite={false} />
+            </mesh>
+            <Html distanceFactor={30} center position={[0, MOON_RADIUS * 0.2, 0]}>
+              <div className="pointer-events-none whitespace-nowrap rounded-sm border border-violet-500 bg-black/90 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[.15em] text-violet-300 shadow-[0_0_10px_rgba(167,139,250,0.5)]">
+                Artemis Base
+              </div>
+            </Html>
+          </group>
         </mesh>
       </group>
     </group>

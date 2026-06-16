@@ -70,7 +70,18 @@ const ASSETS = [
   {
     name: 'moon',
     file: 'moon.jpg',
-    urls: ['https://raw.githubusercontent.com/CoryG89/MoonDemo/master/img/maps/moon.jpg'],
+    urls: [
+      'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img/moon.jpg',
+      'https://raw.githubusercontent.com/CoryG89/MoonDemo/master/img/maps/moon.jpg'
+    ],
+  },
+  {
+    name: 'mars',
+    file: 'mars.jpg',
+    urls: [
+      'https://raw.githubusercontent.com/josdirksen/learning-threejs/master/assets/textures/planets/Mars_2k-050104.png',
+      'https://raw.githubusercontent.com/racmeh/Universe-in-Virtual-Reality/master/mars_1k_color.jpg'
+    ],
   },
 ];
 

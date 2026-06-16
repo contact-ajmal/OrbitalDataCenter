@@ -28,6 +28,7 @@ import { HeatmapOverlay } from './HeatmapOverlay';
 import { ReentryTrails } from './ReentryTrails';
 import { LunarRelay } from './LunarRelay';
 import { RadiationBelt } from './RadiationBelt';
+import { Mars } from './Mars';
 
 /**
  * Root scene composition. The world (Sky/Sun/Moon/Earth), the fleet, the laser
@@ -70,6 +71,7 @@ export function Scene() {
       <HeatmapOverlay />
       <ReentryTrails />
       <LunarRelay />
+      <Mars />
       <RadiationBelt />
     </>
   );

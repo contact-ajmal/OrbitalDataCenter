@@ -216,6 +216,21 @@ export function ControlDock() {
               />
             </div>
             <div className="flex flex-col gap-1 shrink-0">
+              <Label>Celestial Body</Label>
+              <Seg<ViewMode>
+                value={(viewMode === 'moon' || viewMode === 'mars') ? viewMode : 'overview'}
+                onChange={(v) => {
+                  if (v === 'overview') setViewMode('overview');
+                  else setViewMode(v);
+                }}
+                options={[
+                  { label: '🌍 Earth', value: 'overview', title: 'Focus camera on Earth constellation' },
+                  { label: '🌙 Moon', value: 'moon', title: 'Transit camera to Lunar Base' },
+                  { label: '🔴 Mars', value: 'mars', title: 'Transit camera to Mars Olympus Terminal' },
+                ]}
+              />
+            </div>
+            <div className="flex flex-col gap-1 shrink-0">
               <Label>View Mode</Label>
               <Seg<ViewMode>
                 value={viewMode === 'launch' ? 'overview' : viewMode}
@@ -578,6 +593,44 @@ export function ControlDock() {
                   className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
                 >
                   [Trigger Conjunction]
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 7 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">🌙 Artemis Lunar Base (Deep-Space)</span>
+              <p>
+                A high-resolution Moon surface simulation. The Artemis Base geodesic terminal directly terminates Earth's active laser link on the lunar surface rather than the center.
+              </p>
+              <div className="flex gap-2.5 mt-0.5">
+                <button
+                  onClick={() => {
+                    setViewMode('moon');
+                    toast('TRANSITING CAMERA TO ARTEMIS LUNAR BASE');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Transit to Moon]
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 8 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">🔴 Olympus Mars Comm-Terminal</span>
+              <p>
+                Explores Mars at a distance of 2,600 scene units. Features a custom atmospheric glow and a thick, crimson interplanetary laser trunk connecting the lunar relay terminal to the Olympus surface base.
+              </p>
+              <div className="flex gap-2.5 mt-0.5">
+                <button
+                  onClick={() => {
+                    setViewMode('mars');
+                    toast('TRANSITING CAMERA TO OLYMPUS MARS TERMINAL');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Transit to Mars]
                 </button>
               </div>
             </div>

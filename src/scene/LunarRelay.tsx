@@ -81,9 +81,14 @@ export function LunarRelay() {
       linePositions[0] = satPos.x;
       linePositions[1] = satPos.y;
       linePositions[2] = satPos.z;
-      linePositions[3] = moonPos.x;
-      linePositions[4] = moonPos.y;
-      linePositions[5] = moonPos.z;
+      
+      const mx = telemetry.moonWorld[0] || moonPos.x;
+      const my = telemetry.moonWorld[1] || moonPos.y;
+      const mz = telemetry.moonWorld[2] || moonPos.z;
+      
+      linePositions[3] = mx;
+      linePositions[4] = my;
+      linePositions[5] = mz;
 
       if (line) {
         line.geometry.getAttribute('position').needsUpdate = true;

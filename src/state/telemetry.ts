@@ -39,4 +39,8 @@ export const telemetry = {
   lunarRelayIdx: -1,
   /** 1 = inside the high-radiation Van Allen / SAA zone. */
   satRadiation: new Uint8Array(SCENE.MAX_SATS),
+  /** Live world coordinates of the Moon. */
+  moonWorld: new Float32Array(3),
+  /** Live world coordinates of Mars. */
+  marsWorld: new Float32Array(3),
 };

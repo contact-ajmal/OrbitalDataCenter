@@ -180,6 +180,8 @@ export function CameraRig() {
     // (target lerp + distance damp) reads as a smooth zoom, never a cut.
     if (mode !== prevMode.current) {
       if (mode === 'inspect') targetDist.current = INSPECT_DIST;
+      else if (mode === 'moon') targetDist.current = 100;
+      else if (mode === 'mars') targetDist.current = 180;
       prevMode.current = mode;
     }
 
@@ -205,6 +207,20 @@ export function CameraRig() {
       _desired.copy(launch.shipPos);
       minDist = DIST_MIN;
       targetDist.current = launch.camDist; // phase-driven (9 → 16 → 20)
+    } else if (mode === 'moon') {
+      _desired.set(
+        telemetry.moonWorld[0] || 1450,
+        telemetry.moonWorld[1] || 0,
+        telemetry.moonWorld[2] || 0
+      );
+      minDist = 30;
+    } else if (mode === 'mars') {
+      _desired.set(
+        telemetry.marsWorld[0] || 2600,
+        telemetry.marsWorld[1] || 0,
+        telemetry.marsWorld[2] || 0
+      );
+      minDist = 60;
     } else {
       _desired.set(0, 0, 0);
     }

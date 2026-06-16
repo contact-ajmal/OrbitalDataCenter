@@ -40,5 +40,11 @@
     "file": "moon.jpg",
     "bytes": 1830397,
     "source": "https://raw.githubusercontent.com/CoryG89/MoonDemo/master/img/maps/moon.jpg"
+  },
+  {
+    "name": "mars",
+    "file": "mars.jpg",
+    "bytes": 2646932,
+    "source": "https://raw.githubusercontent.com/josdirksen/learning-threejs/master/assets/textures/planets/Mars_2k-050104.png"
   }
 ]

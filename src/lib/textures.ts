@@ -19,7 +19,8 @@ export type TextureName =
   | 'earth-clouds'
   | 'earth-ocean'
   | 'sky-gaia'
-  | 'moon';
+  | 'moon'
+  | 'mars';
 
 const FILES: Record<TextureName, string> = {
   'earth-day': 'earth-day.jpg',
@@ -29,6 +30,7 @@ const FILES: Record<TextureName, string> = {
   'earth-ocean': 'earth-ocean.png',
   'sky-gaia': 'sky-gaia.png',
   moon: 'moon.jpg',
+  mars: 'mars.jpg',
 };
 
 const loader = new TextureLoader();

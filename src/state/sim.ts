@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ViewMode = 'overview' | 'chase' | 'inspect' | 'launch';
+export type ViewMode = 'overview' | 'chase' | 'inspect' | 'launch' | 'moon' | 'mars';
 
 export type Toggles = {
   lasers: boolean;
