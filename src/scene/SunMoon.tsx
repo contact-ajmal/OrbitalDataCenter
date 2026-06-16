@@ -13,7 +13,7 @@ import {
   DoubleSide,
   type Texture,
 } from 'three';
-import { Html, useTexture } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 import { NOMINAL_WARP, SCENE, SCENE_COLORS, SUN_DIR } from '../lib/constants';
 import { loadTexture } from '../lib/textures';
 import { emit } from '../lib/bus';
@@ -72,7 +72,6 @@ function Moon() {
   const packetRefs = useRef<(Mesh | null)[]>([]);
   const radarRef = useRef<Group>(null);
   const massDriverGlowRef = useRef<Mesh>(null);
-  const starshipLaunchTex = useTexture('/textures/starship/starship-launch.png');
   const [tex, setTex] = useState<Texture | null>(null);
 
   const domeWorldPos = useMemo(() => new Vector3(), []);
@@ -347,10 +346,6 @@ function Moon() {
                     🚀 Starship HLS
                   </div>
                 </Html>
-                {/* Starship photo billboard */}
-                <sprite position={[MOON_RADIUS * 0.12, MOON_RADIUS * 0.12, 0]} scale={[MOON_RADIUS * 0.18, MOON_RADIUS * 0.18, 1]}>
-                  <spriteMaterial map={starshipLaunchTex} transparent opacity={0.9} depthWrite={false} />
-                </sprite>
               </group>
 
               {/* xAI Colossus Cluster & Satellite Factory */}

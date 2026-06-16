@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Html, useTexture } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 import { NOMINAL_WARP } from '../lib/constants';
 import { telemetry } from '../state/telemetry';
 import { useSimStore } from '../state/sim';
@@ -68,7 +68,6 @@ type ActiveThreat = {
 export function DeepSpaceSandbox() {
   const [threat, setThreat] = useState<ActiveThreat | null>(null);
   const [laserActive, setLaserActive] = useState(false);
-  const starshipSpaceTex = useTexture('/textures/starship/starship-space.png');
 
   // References for animating the Lagrange points
   const emL1Ref = useRef<THREE.Group>(null);
@@ -552,10 +551,6 @@ export function DeepSpaceSandbox() {
               <meshStandardMaterial color="#9aa0a8" metalness={0.8} roughness={0.4} />
             </mesh>
           ))}
-          {/* Starship billboard photo (visible at close range) */}
-          <sprite position={[6, 6, 0]} scale={[8, 8, 1]}>
-            <spriteMaterial map={starshipSpaceTex} transparent opacity={0.85} depthWrite={false} />
-          </sprite>
           {/* Engine Plume */}
           <mesh ref={(el) => { shipPlumeRefs.current[idx] = el; }} position={[0, -5, 0]} rotation={[Math.PI, 0, 0]}>
             <coneGeometry args={[1.8, 8, 16, 1, true]} />

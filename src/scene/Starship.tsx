@@ -33,7 +33,6 @@ import { earthGroupRef } from '../state/world';
 import { useSimStore, type ViewMode } from '../state/sim';
 import { launch } from '../state/launch';
 import { launchTally } from '../state/econ';
-import { useTexture } from '@react-three/drei';
 
 const ORBIT_R = SCENE.ORBIT_R;
 const EARTH_R = SCENE.EARTH_R;
@@ -96,7 +95,6 @@ export function Starship() {
   const boosterRef = useRef<Group>(null);
   const towerRef = useRef<Group>(null);
   const boosterPlumeRef = useRef<Mesh>(null);
-  const starshipLaunchTex = useTexture('/textures/starship/starship-launch.png');
   const returnPlumeRef = useRef<Mesh>(null);
   const shipPlumeRef = useRef<Mesh>(null);
   const doorRef = useRef<Mesh>(null);
@@ -424,10 +422,6 @@ export function Starship() {
             <planeGeometry args={[1, 0.25]} />
             <meshBasicMaterial map={starbaseDecal} transparent depthWrite={false} />
           </mesh>
-          {/* Starship photo billboard */}
-          <sprite position={[1.5, 2.0, 0]} scale={[2.5, 2.5, 1]}>
-            <spriteMaterial map={starshipLaunchTex} transparent opacity={0.9} depthWrite={false} />
-          </sprite>
         </group>
       </group>
 

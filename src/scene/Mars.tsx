@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Html, useTexture } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 import { useSimStore } from '../state/sim';
 import { telemetry } from '../state/telemetry';
 import { loadTexture } from '../lib/textures';
@@ -23,7 +23,6 @@ export function Mars() {
   const meshRef = useRef<THREE.Mesh>(null);
   const domeRef = useRef<THREE.Mesh>(null);
   const lineRef = useRef<THREE.Line>(null);
-  const starshipMarsTex = useTexture('/textures/starship/starship-mars.png');
 
   const [tex, setTex] = useState<THREE.Texture | null>(null);
   const [cloudsTex, setCloudsTex] = useState<THREE.Texture | null>(null);
@@ -397,10 +396,6 @@ export function Mars() {
                     🚀 Starship Ares-I
                   </div>
                 </Html>
-                {/* Starship photo billboard */}
-                <sprite position={[MARS_RADIUS * 0.12, MARS_RADIUS * 0.12, 0]} scale={[MARS_RADIUS * 0.15, MARS_RADIUS * 0.15, 1]}>
-                  <spriteMaterial map={starshipMarsTex} transparent opacity={0.9} depthWrite={false} />
-                </sprite>
               </group>
 
               {/* Power Hub & Solar Panels */}
