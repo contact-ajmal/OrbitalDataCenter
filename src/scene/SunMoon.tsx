@@ -9,6 +9,8 @@ import {
   AdditiveBlending,
   Vector3,
   Mesh,
+  ShaderMaterial,
+  DoubleSide,
   type Texture,
 } from 'three';
 import { Html } from '@react-three/drei';
@@ -68,6 +70,8 @@ function Moon() {
   const massDriverTipRef = useRef<Group>(null);
   const packetsGroupRef = useRef<Group>(null);
   const packetRefs = useRef<(Mesh | null)[]>([]);
+  const radarRef = useRef<Group>(null);
+  const massDriverGlowRef = useRef<Mesh>(null);
   const [tex, setTex] = useState<Texture | null>(null);
 
   const domeWorldPos = useMemo(() => new Vector3(), []);
@@ -79,6 +83,74 @@ function Moon() {
   const pResult = useMemo(() => new Vector3(), []);
   
   const packetTimes = useMemo(() => [0.0, 0.33, 0.66], []);
+
+  const moonShaderMat = useMemo(() => {
+    if (!tex) return null;
+    return new ShaderMaterial({
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPos;
+        void main() {
+          vUv = uv;
+          vWorldNormal = normalize(mat3(modelMatrix) * normal);
+          vec4 wp = modelMatrix * vec4(position, 1.0);
+          vWorldPos = wp.xyz;
+          gl_Position = projectionMatrix * viewMatrix * wp;
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D uMap;
+        uniform vec3 uSun;
+        varying vec2 vUv;
+        varying vec3 vWorldNormal;
+        varying vec3 vWorldPos;
+        void main() {
+          vec3 n = normalize(vWorldNormal);
+
+          // 1) Finite-difference bump mapping from Moon map for realistic craters at terminator
+          float t = 1.0 / 2048.0;
+          float hL = texture2D(uMap, vUv - vec2(t, 0.0)).r;
+          float hR = texture2D(uMap, vUv + vec2(t, 0.0)).r;
+          float hD = texture2D(uMap, vUv - vec2(0.0, t)).r;
+          float hU = texture2D(uMap, vUv + vec2(0.0, t)).r;
+          vec3 up = abs(n.y) > 0.999 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+          vec3 T = normalize(cross(up, n));
+          vec3 B = cross(n, T);
+          float strength = 4.0;
+          n = normalize(n + (T * (hL - hR) + B * (hD - hU)) * strength);
+
+          float dif = dot(n, uSun);
+          float day = smoothstep(-0.02, 0.05, dif);
+          vec3 dayTex = texture2D(uMap, vUv).rgb;
+          
+          // High contrast shading (extreme sharp terminator)
+          vec3 dayCol = dayTex * (0.02 + 1.25 * max(dif, 0.0));
+          
+          // 2) Procedural night-side lunar colony lights (sleek violet-purple network)
+          float grid = step(0.988, fract(vUv.x * 240.0)) * step(0.965, sin(vUv.y * 360.0));
+          float spots = step(0.995, fract(sin(dot(floor(vUv * 160.0), vec2(127.1, 311.7))) * 43758.5453));
+          float mask = step(0.35, fract(sin(dot(floor(vUv * 12.0), vec2(41.1, 73.3))) * 12345.6789));
+          vec3 nightCol = vec3(0.68, 0.45, 1.0) * (spots * 2.5 + grid * 1.5) * mask * 2.2;
+          float nightAmt = 1.0 - day;
+
+          // Subtle silver rim highlight from solar backscattering
+          vec3 V = normalize(cameraPosition - vWorldPos);
+          float fres = pow(1.0 - max(dot(n, V), 0.0), 5.0);
+          vec3 rimCol = fres * vec3(0.9, 0.95, 1.0) * 0.35 * smoothstep(-0.1, 0.1, dif);
+          
+          vec3 col = dayCol * day + nightCol * nightAmt + rimCol;
+          gl_FragColor = vec4(col, 1.0);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }
+      `,
+      uniforms: {
+        uMap: { value: tex },
+        uSun: { value: SUN_HAT },
+      },
+    });
+  }, [tex]);
 
   useEffect(() => {
     let alive = true;
@@ -98,6 +170,16 @@ function Moon() {
     const sdt = st.paused ? 0 : dt;
     const w = st.timeWarp / NOMINAL_WARP;
     if (pivotRef.current) pivotRef.current.rotation.y += sdt * MOON_RATE * w;
+
+    if (radarRef.current) {
+      radarRef.current.rotation.y += sdt * 1.5 * w;
+    }
+
+    if (massDriverGlowRef.current) {
+      const time = state.clock.getElapsedTime();
+      const glowScale = 0.8 + Math.sin(time * 20) * 0.4;
+      massDriverGlowRef.current.scale.setScalar(glowScale);
+    }
 
     if (domeRef.current) {
       domeRef.current.getWorldPosition(domeWorldPos);
@@ -155,12 +237,11 @@ function Moon() {
         <group ref={pivotRef}>
           <mesh ref={moonMeshRef} position={[MOON_DIST, 0, 0]}>
             <sphereGeometry args={[MOON_RADIUS, 48, 48]} />
-            <meshStandardMaterial
-              map={tex || undefined}
-              color={tex ? undefined : '#555555'}
-              roughness={0.95}
-              metalness={0}
-            />
+            {moonShaderMat ? (
+              <primitive object={moonShaderMat} attach="material" />
+            ) : (
+              <meshStandardMaterial color="#555555" roughness={0.95} metalness={0} />
+            )}
             {/* Artemis Base Dome & SpaceX/xAI Infrastructure Group */}
             <group position={[-MOON_RADIUS, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
               {/* Artemis Base Dome */}
@@ -177,6 +258,53 @@ function Moon() {
                   Artemis Base
                 </div>
               </Html>
+
+              {/* Glowing Glass Transit Tubes */}
+              {/* Dome to Starship */}
+              <mesh position={[1.25, 0.02, -1.25]} rotation={[0, -Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MOON_RADIUS * 0.015, MOON_RADIUS * 0.015, 3.2, 8]} />
+                <meshStandardMaterial color="#c084fc" transparent opacity={0.4} roughness={0.1} metalness={0.9} />
+              </mesh>
+              <mesh position={[1.25, 0.02, -1.25]} rotation={[0, -Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MOON_RADIUS * 0.003, MOON_RADIUS * 0.003, 3.2, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+
+              {/* Dome to xAI Colossus */}
+              <mesh position={[-1.25, 0.02, -1.25]} rotation={[0, Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MOON_RADIUS * 0.015, MOON_RADIUS * 0.015, 3.2, 8]} />
+                <meshStandardMaterial color="#c084fc" transparent opacity={0.4} roughness={0.1} metalness={0.9} />
+              </mesh>
+              <mesh position={[-1.25, 0.02, -1.25]} rotation={[0, Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MOON_RADIUS * 0.003, MOON_RADIUS * 0.003, 3.2, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+
+              {/* Dome to Mass Driver */}
+              <mesh position={[1.25, 0.02, 1.25]} rotation={[0, Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MOON_RADIUS * 0.015, MOON_RADIUS * 0.015, 3.2, 8]} />
+                <meshStandardMaterial color="#c084fc" transparent opacity={0.4} roughness={0.1} metalness={0.9} />
+              </mesh>
+              <mesh position={[1.25, 0.02, 1.25]} rotation={[0, Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MOON_RADIUS * 0.003, MOON_RADIUS * 0.003, 3.2, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+
+              {/* Spinning Radar/Communication Mast */}
+              <group position={[0, MOON_RADIUS * 0.12, 0]} ref={radarRef}>
+                <mesh position={[0, MOON_RADIUS * 0.04, 0]}>
+                  <cylinderGeometry args={[MOON_RADIUS * 0.008, MOON_RADIUS * 0.008, MOON_RADIUS * 0.08, 8]} />
+                  <meshStandardMaterial color="#334155" metalness={0.8} />
+                </mesh>
+                <mesh position={[0, MOON_RADIUS * 0.08, 0]} rotation={[0.4, 0, 0]}>
+                  <coneGeometry args={[MOON_RADIUS * 0.05, MOON_RADIUS * 0.02, 16, 1, true]} />
+                  <meshStandardMaterial color="#a78bfa" metalness={0.8} roughness={0.3} side={DoubleSide} />
+                </mesh>
+                <mesh position={[0, MOON_RADIUS * 0.1, 0.01]} rotation={[0.4, 0, 0]}>
+                  <sphereGeometry args={[MOON_RADIUS * 0.01, 8, 8]} />
+                  <meshBasicMaterial color="#ffffff" />
+                </mesh>
+              </group>
 
               {/* SpaceX Starship HLS Lander */}
               <group position={[2.5, 0, -2.5]}>
@@ -200,6 +328,19 @@ function Moon() {
                   <ringGeometry args={[0, MOON_RADIUS * 0.03, 16]} />
                   <meshBasicMaterial color="#38bdf8" transparent opacity={0.4} depthWrite={false} />
                 </mesh>
+
+                {/* Local Starship Solar Array */}
+                <group position={[0.7, 0, 0.4]}>
+                  <mesh position={[0, MOON_RADIUS * 0.03, 0]}>
+                    <cylinderGeometry args={[MOON_RADIUS * 0.005, MOON_RADIUS * 0.005, MOON_RADIUS * 0.06, 8]} />
+                    <meshStandardMaterial color="#475569" />
+                  </mesh>
+                  <mesh position={[0, MOON_RADIUS * 0.06, 0]} rotation={[0.5, 0, 0]}>
+                    <boxGeometry args={[MOON_RADIUS * 0.06, MOON_RADIUS * 0.002, MOON_RADIUS * 0.03]} />
+                    <meshStandardMaterial color="#1f2937" metalness={0.9} roughness={0.1} />
+                  </mesh>
+                </group>
+
                 <Html distanceFactor={30} center position={[0, MOON_RADIUS * 0.24, 0]}>
                   <div className="pointer-events-none whitespace-nowrap rounded border border-slate-500 bg-black/85 px-1 py-0.5 text-[5px] font-bold uppercase tracking-wider text-slate-300 shadow-[0_0_8px_rgba(226,232,240,0.3)]">
                     🚀 Starship HLS
@@ -229,6 +370,19 @@ function Moon() {
                   <ringGeometry args={[0, MOON_RADIUS * 0.04, 32]} />
                   <meshBasicMaterial color="#f87171" transparent opacity={0.3} depthWrite={false} />
                 </mesh>
+
+                {/* Battery Packs and Cooling Vents */}
+                <group position={[0, 0, 0.7]}>
+                  <mesh position={[0, MOON_RADIUS * 0.02, 0]}>
+                    <boxGeometry args={[MOON_RADIUS * 0.05, MOON_RADIUS * 0.04, MOON_RADIUS * 0.02]} />
+                    <meshStandardMaterial color="#475569" />
+                  </mesh>
+                  <mesh position={[0, MOON_RADIUS * 0.04, 0]}>
+                    <boxGeometry args={[MOON_RADIUS * 0.04, MOON_RADIUS * 0.005, MOON_RADIUS * 0.015]} />
+                    <meshBasicMaterial color="#38bdf8" />
+                  </mesh>
+                </group>
+
                 <Html distanceFactor={30} center position={[0, MOON_RADIUS * 0.12, 0]}>
                   <div className="pointer-events-none whitespace-nowrap rounded border border-red-500 bg-black/85 px-1 py-0.5 text-[5px] font-bold uppercase tracking-wider text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.4)]">
                     🧠 xAI Colossus Lunar
@@ -255,7 +409,13 @@ function Moon() {
                     <meshBasicMaterial color="#60a5fa" />
                   </mesh>
                   {/* Dummy group representing Mass Driver Tip for particle launching */}
-                  <group position={[0, MOON_RADIUS * 0.21, 0]} ref={massDriverTipRef} />
+                  <group position={[0, MOON_RADIUS * 0.21, 0]} ref={massDriverTipRef}>
+                    {/* Charging/Launch Glow Emitter */}
+                    <mesh ref={massDriverGlowRef}>
+                      <sphereGeometry args={[MOON_RADIUS * 0.025, 8, 8]} />
+                      <meshBasicMaterial color="#60a5fa" transparent opacity={0.8} blending={AdditiveBlending} />
+                    </mesh>
+                  </group>
                 </group>
                 <Html distanceFactor={30} center position={[0, MOON_RADIUS * 0.22, 0]}>
                   <div className="pointer-events-none whitespace-nowrap rounded border border-blue-500 bg-black/85 px-1 py-0.5 text-[5px] font-bold uppercase tracking-wider text-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.4)]">

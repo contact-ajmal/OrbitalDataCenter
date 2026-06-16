@@ -24,6 +24,7 @@ import {
 } from './shaders/earth';
 import { storm } from '../state/storm';
 import { type Mesh, type MeshBasicMaterial } from 'three';
+import { EarthStations } from './EarthStations';
 
 const EARTH_R = SCENE.EARTH_R;
 
@@ -220,6 +221,9 @@ export function Earth() {
       <mesh material={ready ? surfaceMat : fallbackMat}>
         <sphereGeometry args={[EARTH_R, 128, 128]} />
       </mesh>
+
+      {/* Detailed Ground Stations */}
+      <EarthStations />
 
       {/* Cloud shell */}
       {cloudsReady && (
