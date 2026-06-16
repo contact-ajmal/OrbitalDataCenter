@@ -17,6 +17,7 @@ import { radialTexture } from '../lib/glow';
 import { telemetry } from '../state/telemetry';
 import { useSimStore } from '../state/sim';
 import { heroGroupRef, labelState, type LabelKey } from '../state/labels';
+import { useUiStore } from '../state/ui';
 
 // Local anchor points (hero space) — must match the geometry below.
 const ANCHORS: Record<LabelKey | 'tipL' | 'tipR', Vector3> = {
@@ -163,18 +164,43 @@ function makeRadiatorTexture(maxAniso: number): CanvasTexture {
 }
 
 /** Ribbed radiator panel (5 cross-ribs) at a given z, with serpentine texture. */
-function Radiator({ z, tex }: { z: number; tex: Texture }) {
+function Radiator({
+  z,
+  tex,
+  isRadiatorActive,
+  hasActive,
+  matRef,
+}: {
+  z: number;
+  tex: Texture;
+  isRadiatorActive: boolean;
+  hasActive: boolean;
+  matRef?: React.RefObject<any>;
+}) {
   const ribs = [-0.6, -0.3, 0, 0.3, 0.6];
   return (
     <group position={[0, 0, z]}>
       <mesh>
         <boxGeometry args={[1.5, 0.03, 0.8]} />
-        <meshStandardMaterial map={tex} roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial
+          ref={matRef}
+          map={tex}
+          roughness={0.85}
+          metalness={0.05}
+          transparent={hasActive}
+          opacity={isRadiatorActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+        />
       </mesh>
       {ribs.map((rx) => (
         <mesh key={rx} position={[rx, 0.025, 0]}>
           <boxGeometry args={[0.04, 0.04, 0.78]} />
-          <meshStandardMaterial color="#b9c4cf" roughness={0.6} metalness={0.2} />
+          <meshStandardMaterial
+            color="#b9c4cf"
+            roughness={0.6}
+            metalness={0.2}
+            transparent={hasActive}
+            opacity={isRadiatorActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+          />
         </mesh>
       ))}
     </group>
@@ -184,6 +210,26 @@ function Radiator({ z, tex }: { z: number; tex: Texture }) {
 export function HeroSat() {
   const groupRef = useRef<Group>(null);
   const viewMode = useSimStore((s) => s.viewMode);
+
+  const hoveredComponent = useUiStore((s) => s.hoveredComponent);
+  const inspectComponent = useUiStore((s) => s.inspectComponent);
+  const activeComponent = inspectComponent || hoveredComponent;
+  const hasActive = activeComponent !== null;
+
+  const isBusActive = activeComponent === 'bus';
+  const isComputeActive = activeComponent === 'compute';
+  const isWingActive = activeComponent === 'wing';
+  const isRadiatorActive = activeComponent === 'radiator';
+  const isLaserActive = activeComponent === 'laser';
+
+  const busMatRef = useRef<any>(null);
+  const computeMatRef = useRef<any>(null);
+  const wingMatRef1 = useRef<any>(null);
+  const wingMatRef2 = useRef<any>(null);
+  const radMatRef1 = useRef<any>(null);
+  const radMatRef2 = useRef<any>(null);
+  const laserMatRef1 = useRef<any>(null);
+  const laserMatRef2 = useRef<any>(null);
 
   const gl = useThree((s) => s.gl) as WebGLRenderer;
   const maxAniso = useMemo(() => gl.capabilities.getMaxAnisotropy(), [gl]);
@@ -276,6 +322,56 @@ export function HeroSat() {
       target.op = smoothstep(-0.35, 0.35, facing);
       target.vis = onScreen && facing > -0.35;
     }
+
+    // Highlighting dynamic properties updates
+    const time = state.clock.getElapsedTime();
+    const pulse = 1.3 + Math.sin(time * 8) * 0.4; // pulse between 0.9 and 1.7
+
+    if (busMatRef.current) {
+      busMatRef.current.transparent = hasActive;
+      busMatRef.current.opacity = isBusActive ? 1.0 : (hasActive ? 0.25 : 1.0);
+      busMatRef.current.emissive.set(isBusActive ? '#52d7ff' : '#000000');
+      busMatRef.current.emissiveIntensity = isBusActive ? pulse : 0;
+    }
+    if (computeMatRef.current) {
+      computeMatRef.current.transparent = hasActive;
+      computeMatRef.current.opacity = isComputeActive ? 1.0 : (hasActive ? 0.25 : 1.0);
+      computeMatRef.current.emissive.set('#52d7ff');
+      computeMatRef.current.emissiveIntensity = isComputeActive ? pulse * 1.5 : (hasActive ? 0.15 : 0.8);
+    }
+    const updateWingMat = (ref: React.RefObject<any>) => {
+      if (ref.current) {
+        ref.current.transparent = hasActive;
+        ref.current.opacity = isWingActive ? 1.0 : (hasActive ? 0.25 : 1.0);
+        ref.current.emissive.set(isWingActive ? '#52d7ff' : '#0a1c4a');
+        ref.current.emissiveIntensity = isWingActive ? pulse : (hasActive ? 0.1 : 0.5);
+      }
+    };
+    updateWingMat(wingMatRef1);
+    updateWingMat(wingMatRef2);
+
+    if (radMatRef1.current) {
+      radMatRef1.current.transparent = hasActive;
+      radMatRef1.current.opacity = isRadiatorActive ? 1.0 : (hasActive ? 0.25 : 1.0);
+      radMatRef1.current.emissive.set(isRadiatorActive ? '#52d7ff' : '#000000');
+      radMatRef1.current.emissiveIntensity = isRadiatorActive ? pulse : 0;
+    }
+    if (radMatRef2.current) {
+      radMatRef2.current.transparent = hasActive;
+      radMatRef2.current.opacity = isRadiatorActive ? 1.0 : (hasActive ? 0.25 : 1.0);
+      radMatRef2.current.emissive.set(isRadiatorActive ? '#52d7ff' : '#000000');
+      radMatRef2.current.emissiveIntensity = isRadiatorActive ? pulse : 0;
+    }
+    const updateLaserMat = (ref: React.RefObject<any>) => {
+      if (ref.current) {
+        ref.current.transparent = hasActive;
+        ref.current.opacity = isLaserActive ? 1.0 : (hasActive ? 0.25 : 1.0);
+        ref.current.emissiveIntensity = isLaserActive ? pulse * 1.5 : (hasActive ? 0.2 : 1.2);
+        ref.current.emissive.set(isLaserActive ? '#52d7ff' : '#52d7ff');
+      }
+    };
+    updateLaserMat(laserMatRef1);
+    updateLaserMat(laserMatRef2);
   });
 
   const wingEmissive = useMemo(() => new Color('#0a1c4a'), []);
@@ -286,13 +382,19 @@ export function HeroSat() {
       {/* bus — gold MLI thermal foil */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[0.7, 0.5, 0.95]} />
-        <meshStandardMaterial map={goldTex} metalness={0.75} roughness={0.42} />
+        <meshStandardMaterial
+          ref={busMatRef}
+          map={goldTex}
+          metalness={0.75}
+          roughness={0.42}
+        />
       </mesh>
 
       {/* compute module: emissive cyan slot + 7 rack vent fins */}
       <mesh position={[0, -0.34, 0.12]}>
         <boxGeometry args={[0.6, 0.18, 0.62]} />
         <meshStandardMaterial
+          ref={computeMatRef}
           color="#0a1730"
           emissive={computeGlow}
           emissiveIntensity={0.8}
@@ -302,16 +404,23 @@ export function HeroSat() {
       {Array.from({ length: 7 }, (_, k) => (
         <mesh key={`fin${k}`} position={[-0.24 + k * 0.08, -0.44, 0.12]}>
           <boxGeometry args={[0.015, 0.05, 0.5]} />
-          <meshStandardMaterial color="#23282e" metalness={0.7} roughness={0.5} />
+          <meshStandardMaterial
+            color="#23282e"
+            metalness={0.7}
+            roughness={0.5}
+            transparent={hasActive}
+            opacity={isComputeActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+          />
         </mesh>
       ))}
 
       {/* solar wings + yoke arm + hinge drum */}
-      {([-1.6, 1.6] as const).map((wx) => (
+      {([-1.6, 1.6] as const).map((wx, idx) => (
         <group key={wx}>
           <mesh position={[wx, 0.02, 0]}>
             <boxGeometry args={[2.6, 0.04, 1.1]} />
             <meshStandardMaterial
+              ref={idx === 0 ? wingMatRef1 : wingMatRef2}
               map={solarTex}
               emissive={wingEmissive}
               emissiveIntensity={0.5}
@@ -322,36 +431,61 @@ export function HeroSat() {
           {/* yoke arm */}
           <mesh position={[wx * 0.2, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[0.03, 0.03, Math.abs(wx) * 0.7, 12]} />
-            <meshStandardMaterial color="#80858d" metalness={0.85} roughness={0.4} />
+            <meshStandardMaterial
+              color="#80858d"
+              metalness={0.85}
+              roughness={0.4}
+              transparent={hasActive}
+              opacity={isWingActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+            />
           </mesh>
           {/* hinge drum at the bus */}
           <mesh position={[wx > 0 ? 0.36 : -0.36, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[0.07, 0.07, 0.16, 16]} />
-            <meshStandardMaterial color="#5a606a" metalness={0.7} roughness={0.45} />
+            <meshStandardMaterial
+              color="#5a606a"
+              metalness={0.7}
+              roughness={0.45}
+              transparent={hasActive}
+              opacity={isWingActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+            />
           </mesh>
         </group>
       ))}
 
       {/* ribbed radiators + coolant manifold pipes */}
-      <Radiator z={1.55} tex={radTex} />
-      <Radiator z={-1.55} tex={radTex} />
+      <Radiator z={1.55} tex={radTex} isRadiatorActive={isRadiatorActive} hasActive={hasActive} matRef={radMatRef1} />
+      <Radiator z={-1.55} tex={radTex} isRadiatorActive={isRadiatorActive} hasActive={hasActive} matRef={radMatRef2} />
       {([1, -1] as const).map((sz) => (
         <mesh key={`pipe${sz}`} position={[0.12, 0, sz * 0.78]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.022, 0.022, 1.4, 10]} />
-          <meshStandardMaterial color="#9aa0a8" metalness={0.85} roughness={0.4} />
+          <meshStandardMaterial
+            color="#9aa0a8"
+            metalness={0.85}
+            roughness={0.4}
+            transparent={hasActive}
+            opacity={isRadiatorActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+          />
         </mesh>
       ))}
 
       {/* laser terminals ×2: gimbal sphere + tapered barrel + glow */}
-      {([-0.13, 0.13] as const).map((lx) => (
+      {([-0.13, 0.13] as const).map((lx, idx) => (
         <group key={lx} position={[lx, 0.2, 0]}>
           <mesh>
             <sphereGeometry args={[0.09, 16, 16]} />
-            <meshStandardMaterial color="#2a323e" metalness={0.8} roughness={0.4} />
+            <meshStandardMaterial
+              color="#2a323e"
+              metalness={0.8}
+              roughness={0.4}
+              transparent={hasActive}
+              opacity={isLaserActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+            />
           </mesh>
           <mesh position={[0, 0.12, 0]}>
             <cylinderGeometry args={[0.025, 0.05, 0.22, 14]} />
             <meshStandardMaterial
+              ref={idx === 0 ? laserMatRef1 : laserMatRef2}
               color="#0a1730"
               emissive={computeGlow}
               emissiveIntensity={1.2}
@@ -359,7 +493,12 @@ export function HeroSat() {
             />
           </mesh>
           <sprite position={[0, 0.24, 0]} scale={0.32}>
-            <spriteMaterial map={glowTex} transparent depthWrite={false} />
+            <spriteMaterial
+              map={glowTex}
+              transparent
+              depthWrite={false}
+              opacity={isLaserActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+            />
           </sprite>
         </group>
       ))}
@@ -368,17 +507,36 @@ export function HeroSat() {
       {/* star-tracker barrel (angled) */}
       <mesh position={[0.22, 0.18, -0.3]} rotation={[0.5, 0, 0.3]}>
         <cylinderGeometry args={[0.04, 0.05, 0.18, 12]} />
-        <meshStandardMaterial color="#1a2028" metalness={0.6} roughness={0.5} />
+        <meshStandardMaterial
+          color="#1a2028"
+          metalness={0.6}
+          roughness={0.5}
+          transparent={hasActive}
+          opacity={isBusActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+        />
       </mesh>
       {/* GNSS patch antenna (flat) */}
       <mesh position={[-0.22, 0.27, -0.2]}>
         <boxGeometry args={[0.14, 0.02, 0.14]} />
-        <meshStandardMaterial color="#3a4450" metalness={0.5} roughness={0.6} />
+        <meshStandardMaterial
+          color="#3a4450"
+          metalness={0.5}
+          roughness={0.6}
+          transparent={hasActive}
+          opacity={isBusActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+        />
       </mesh>
       {/* aft thruster nozzle (open cone) */}
       <mesh position={[0, -0.1, -0.52]} rotation={[Math.PI / 2, 0, 0]}>
         <coneGeometry args={[0.08, 0.16, 16, 1, true]} />
-        <meshStandardMaterial color="#6a6258" metalness={0.7} roughness={0.5} side={2} />
+        <meshStandardMaterial
+          color="#6a6258"
+          metalness={0.7}
+          roughness={0.5}
+          side={2}
+          transparent={hasActive}
+          opacity={isBusActive ? 1.0 : (hasActive ? 0.25 : 1.0)}
+        />
       </mesh>
     </group>
   );

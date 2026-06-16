@@ -8,6 +8,7 @@ import { launch } from '../state/launch';
 import { stopTour, tour } from '../state/tour';
 import { cameraReset } from '../state/reset';
 import { cameraState } from '../state/cameraState';
+import { useUiStore } from '../state/ui';
 
 const DIST_MIN = 6;
 const DIST_MAX = 900;
@@ -180,6 +181,14 @@ export function CameraRig() {
     if (mode !== prevMode.current) {
       if (mode === 'inspect') targetDist.current = INSPECT_DIST;
       prevMode.current = mode;
+    }
+
+    if (mode === 'inspect') {
+      const uist = useUiStore.getState();
+      if (uist.inspectComponent && targetDist.current > 11.5) {
+        // clear selected component on zoom out!
+        uist.setInspectComponent(null);
+      }
     }
 
     // desired target + min distance by mode
