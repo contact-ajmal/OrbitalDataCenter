@@ -2,7 +2,7 @@ import { TopBar } from './TopBar';
 import { TelemetryPanel } from './TelemetryPanel';
 import { VehiclePanel } from './VehiclePanel';
 import { ControlDock } from './ControlDock';
-import { Ticker } from './Ticker';
+
 import { Toaster } from './Toaster';
 import { IntroOverlay } from './IntroOverlay';
 import { PartLabels } from './PartLabels';
@@ -104,7 +104,6 @@ export function Hud() {
         <ControlDock />
         <MobileNav />
         <BadgeRail />
-        <Ticker />
         <AssetChip />
         <InfoModal />
         <IntroOverlay />
