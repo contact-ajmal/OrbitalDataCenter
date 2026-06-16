@@ -3,6 +3,7 @@ import { TelemetryPanel } from './TelemetryPanel';
 import { VehiclePanel } from './VehiclePanel';
 import { ControlDock } from './ControlDock';
 
+import { Ticker } from './Ticker';
 import { Toaster } from './Toaster';
 import { IntroOverlay } from './IntroOverlay';
 import { PartLabels } from './PartLabels';
@@ -10,7 +11,7 @@ import { MissionStrip } from './MissionStrip';
 import { SatCard } from './SatCard';
 import { AssetChip } from './AssetChip';
 import { InfoModal } from './InfoModal';
-import { BadgeRail } from './BadgeRail';
+
 import { StationLabels } from './StationLabels';
 import { Shortcuts } from './Shortcuts';
 import { TrainingPanel } from './TrainingPanel';
@@ -103,7 +104,7 @@ export function Hud() {
         <RoadmapBar />
         <ControlDock />
         <MobileNav />
-        <BadgeRail />
+        <Ticker />
         <AssetChip />
         <InfoModal />
         <IntroOverlay />
