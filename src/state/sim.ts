@@ -28,6 +28,8 @@ type SimState = {
   thermal: boolean;
   photoMode: boolean;
   lowGraphics: boolean;
+  shieldActive: boolean;
+  qkdActive: boolean;
 
   setSatCount: (n: number) => void;
   setTimeWarp: (n: number) => void;
@@ -41,6 +43,8 @@ type SimState = {
   toggleThermal: () => void;
   setPhotoMode: (v: boolean) => void;
   toggleLowGraphics: () => void;
+  toggleShield: () => void;
+  toggleQkd: () => void;
   /** Select a satellite AND fly to it: sets selectedIdx + chaseIdx + inspect. */
   selectSat: (i: number) => void;
 };
@@ -69,6 +73,9 @@ export const useSimStore = create<SimState>((set) => ({
     }
   })(),
 
+  shieldActive: false,
+  qkdActive: false,
+
   setSatCount: (satCount) => set({ satCount }),
   setTimeWarp: (timeWarp) => set({ timeWarp }),
   toggle: (key) =>
@@ -93,5 +100,7 @@ export const useSimStore = create<SimState>((set) => ({
       }
       return { lowGraphics: next };
     }),
+  toggleShield: () => set((s) => ({ shieldActive: !s.shieldActive })),
+  toggleQkd: () => set((s) => ({ qkdActive: !s.qkdActive })),
   selectSat: (i) => set({ selectedIdx: i, chaseIdx: i, viewMode: 'inspect' }),
 }));

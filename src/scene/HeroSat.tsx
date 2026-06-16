@@ -222,7 +222,9 @@ function Radiator({
 
 export function HeroSat() {
   const groupRef = useRef<Group>(null);
+  const shieldRef = useRef<Mesh>(null);
   const viewMode = useSimStore((s) => s.viewMode);
+  const shieldActive = useSimStore((s) => s.shieldActive);
 
   const hoveredComponent = useUiStore((s) => s.hoveredComponent);
   const inspectComponent = useUiStore((s) => s.inspectComponent);
@@ -441,6 +443,14 @@ export function HeroSat() {
     };
     updateLaserMat(laserMatRef1);
     updateLaserMat(laserMatRef2);
+
+    if (shieldRef.current) {
+      const time = state.clock.getElapsedTime();
+      shieldRef.current.rotation.y = time * 0.15;
+      shieldRef.current.rotation.x = time * 0.08;
+      const scale = 1.0 + Math.sin(time * 3) * 0.02;
+      shieldRef.current.scale.setScalar(scale);
+    }
   });
 
   const wingEmissive = useMemo(() => new Color('#0a1c4a'), []);
@@ -448,6 +458,34 @@ export function HeroSat() {
 
   return (
     <group ref={groupRef} visible={viewMode === 'inspect'}>
+      {/* deflector shield bubble */}
+      {shieldActive && (
+        <group ref={shieldRef}>
+          {/* Outer wireframe geodesic dome */}
+          <mesh>
+            <icosahedronGeometry args={[3.2, 2]} />
+            <meshBasicMaterial
+              color="#00f3ff"
+              transparent
+              opacity={0.15}
+              wireframe
+              blending={AdditiveBlending}
+              depthWrite={false}
+            />
+          </mesh>
+          {/* Inner soft glowing sphere */}
+          <mesh>
+            <sphereGeometry args={[3.1, 32, 16]} />
+            <meshBasicMaterial
+              color="#0088ff"
+              transparent
+              opacity={0.05}
+              blending={AdditiveBlending}
+              depthWrite={false}
+            />
+          </mesh>
+        </group>
+      )}
       {/* bus — gold MLI thermal foil */}
       <mesh
         position={[0, 0, 0]}

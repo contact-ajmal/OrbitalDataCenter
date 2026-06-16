@@ -82,6 +82,10 @@ export function ControlDock() {
   const setViewMode = useSimStore((s) => s.setViewMode);
   const setVisionOn = useSimStore((s) => s.setVisionOn);
   const selectedIdx = useSimStore((s) => s.selectedIdx);
+  const shieldActive = useSimStore((s) => s.shieldActive);
+  const qkdActive = useSimStore((s) => s.qkdActive);
+  const toggleShield = useSimStore((s) => s.toggleShield);
+  const toggleQkd = useSimStore((s) => s.toggleQkd);
 
   const mobileTab = useUiStore((s) => s.mobileTab);
   const activeTab = useUiStore((s) => s.activeTab);
@@ -167,6 +171,29 @@ export function ControlDock() {
                 }
               >
                 ☁ Weather Sim
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-1 shrink-0">
+              <Label>Security</Label>
+              <button
+                onClick={() => {
+                  toggleQkd();
+                  toast(
+                    !qkdActive
+                      ? 'QKD ENCRYPTION ACTIVE — QUANTUM ENTANGLED LINKS SECURED'
+                      : 'QKD SECURE MESH DEACTIVATED — STANDARD OPTICAL LINKS'
+                  );
+                }}
+                title="Toggle Quantum Key Distribution (QKD) high-security laser mesh network"
+                className={
+                  'pointer-events-auto rounded border px-2.5 py-1.5 text-[9px] uppercase tracking-[.16em] transition-colors cursor-pointer ' +
+                  (qkdActive
+                    ? 'border-ok/60 bg-ok/15 text-ok'
+                    : 'border-white/10 text-faint hover:text-dim')
+                }
+              >
+                🔑 QKD Crypt
               </button>
             </div>
           </div>
@@ -279,7 +306,7 @@ export function ControlDock() {
         )}
 
         {activeTab === 'hazards' && (
-          <div className="flex flex-wrap items-center justify-between w-full gap-3">
+          <div className="flex flex-col gap-3 w-full">
             <div className="flex flex-col gap-1 w-full">
               <Label>Constellation Hazards</Label>
               <div className="flex flex-wrap items-center gap-1.5">
@@ -318,6 +345,31 @@ export function ControlDock() {
                   title={selectedIdx >= 0 ? "Launch a kinetic ASAT missile to destroy the selected satellite" : "Select a satellite first to trigger ASAT strike"}
                 >
                   💥 ASAT Kinetic Strike
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1 w-full border-t border-white/5 pt-2">
+              <Label>Constellation Defenses</Label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    toggleShield();
+                    toast(
+                      !shieldActive
+                        ? 'SHIELD GENERATOR ONLINE — CONSTELLATION PROTECTED FROM SEU & STORM RADIATION'
+                        : 'SHIELD GENERATOR DEACTIVATED — FLEET EXPOSED'
+                    );
+                  }}
+                  className={
+                    'pointer-events-auto rounded border px-3 py-1.5 text-[9px] uppercase tracking-[.18em] transition-colors cursor-pointer ' +
+                    (shieldActive
+                      ? 'border-laser bg-laser/20 text-laser'
+                      : 'border-white/15 text-dim hover:text-ink')
+                  }
+                  title="Activate magnetospheric deflector shields to protect constellation against space hazards"
+                >
+                  🛡 Deflector Shield
                 </button>
               </div>
             </div>

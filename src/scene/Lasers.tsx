@@ -81,7 +81,8 @@ export function Lasers() {
   );
 
   useFrame((_, dt) => {
-    if (!useSimStore.getState().toggles.lasers) return;
+    const sim = useSimStore.getState();
+    if (!sim.toggles.lasers) return;
     const pairs = network.pairs;
     const np = pairs.length;
     const sw = telemetry.satWorld;
@@ -96,6 +97,8 @@ export function Lasers() {
       const colArr = colAttr.array as Float32Array;
       const drawn = Math.min(np, LINK_CAP);
       const rad = telemetry.satRadiation;
+      const shieldActive = sim.shieldActive;
+      const qkdActive = sim.qkdActive;
 
       for (let k = 0; k < drawn; k++) {
         const pair = pairs[k]!;
@@ -113,10 +116,16 @@ export function Lasers() {
         arr[o + 5] = sw[b + 2]!;
 
         // Radiation exposure causes purple/magenta flickering cross-talk
-        const inRad = rad[idxA] === 1 || rad[idxB] === 1;
+        const inRad = (rad[idxA] === 1 || rad[idxB] === 1) && !shieldActive;
         let r = 0.32;
         let g = 0.84;
         let bVal = 1.0;
+
+        if (qkdActive) {
+          r = 0.13;
+          g = 0.95;
+          bVal = 0.45;
+        }
 
         if (inRad) {
           const f = 0.25 + 0.75 * Math.random();
@@ -138,11 +147,17 @@ export function Lasers() {
     }
 
     // advance + place pulses (frozen under pause)
-    const sim = useSimStore.getState();
     const sdt = sim.paused ? 0 : dt;
-    const speed = sdt * (0.5 + sim.timeWarp * 0.004);
+    const speedMultiplier = sim.qkdActive ? 2.0 : 1.0;
+    const speed = sdt * (0.5 + sim.timeWarp * 0.004) * speedMultiplier;
     const pts = pulsesRef.current;
     if (pts) {
+      const mat = pts.material as PointsMaterial;
+      if (sim.qkdActive) {
+        mat.color.setHex(0x39ff14); // neon green QKD pulses
+      } else {
+        mat.color.set(SCENE_COLORS.laser); // standard blue/cyan laser pulses
+      }
       const posAttr = pts.geometry.getAttribute('position') as BufferAttribute;
       const arr = posAttr.array as Float32Array;
       for (let i = 0; i < PULSE_COUNT; i++) {

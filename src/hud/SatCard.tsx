@@ -27,6 +27,7 @@ type Card = {
   stationWeather: 'clear' | 'cloudy' | null;
   lunarRelay: boolean;
   radiationZone: boolean;
+  shieldActive: boolean;
 };
 
 function read(i: number): Card | null {
@@ -49,6 +50,7 @@ function read(i: number): Card | null {
 
   const lunarRelay = telemetry.lunarRelayIdx === i;
   const radiationZone = telemetry.satRadiation[i] === 1;
+  const shieldActive = useSimStore.getState().shieldActive;
 
   return {
     plane: sat?.plane ?? 0,
@@ -65,6 +67,7 @@ function read(i: number): Card | null {
     stationWeather,
     lunarRelay,
     radiationZone,
+    shieldActive,
   };
 }
 
@@ -207,8 +210,15 @@ export function SatCard() {
       {card.radiationZone && (
         <Stat
           label="Radiation Belt"
-          value="DANGEROUS (ECC Active)"
-          accent="text-fuchsia-400 font-bold animate-pulse"
+          value={card.shieldActive ? "DEFLECTED" : "DANGEROUS (ECC Active)"}
+          accent={card.shieldActive ? "text-laser font-bold" : "text-fuchsia-400 font-bold animate-pulse"}
+        />
+      )}
+      {card.shieldActive && (
+        <Stat
+          label="Deflector Shield"
+          value="ACTIVE"
+          accent="text-laser font-bold animate-pulse"
         />
       )}
       {card.downlinkStation >= 0 && (
