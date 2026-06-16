@@ -78,16 +78,16 @@ const COMPONENT_DETAILS: Record<SystemKey, {
     link: { text: 'Wikipedia: Spacecraft Thermal Control', url: 'https://en.wikipedia.org/wiki/Spacecraft_thermal_control' },
   },
   compute: {
-    title: 'AI Tensor Compute Node',
-    subtitle: 'ORBITAL EXAFLOPS INFERENCE PAYLOAD',
+    title: 'xAI GPU Compute Module',
+    subtitle: 'ORBITAL EXAFLOPS COLOSSUS PAYLOAD',
     specs: [
       { label: 'Inference Capacity', value: '8.4 PetaFLOPS (INT8)' },
       { label: 'Operational Power', value: '120 kW (150 kW peak)' },
-      { label: 'Optical Backplane', value: '800 Gbps DWDM ring' },
-      { label: 'Junction Target', value: '<65°C under full load' },
+      { label: 'Compute Hardware', value: 'NVIDIA Blackwell GB300' },
+      { label: 'Junction Target', value: '<68°C under full load' },
     ],
-    description: 'The primary compute engine hosting custom liquid-cooled Tensor Processing Units (TPUs). Runs real-time orbital mesh routing protocols, satellite swarm neural processing, and edge video intelligence. Optically interconnected with low latency.',
-    link: { text: 'Google TPU Architecture Guide', url: 'https://cloud.google.com/tpu/docs/intro-to-tpu' },
+    description: 'The primary compute engine hosting custom liquid-cooled xAI GPU nodes (Colossus supercomputer heritage). Runs xAI\'s Grok models for real-time edge intelligence, constellation-mesh packet routing, and multi-agent swarm processing. Features direct-to-die liquid cooling.',
+    link: { text: 'xAI Research & Announcements', url: 'https://x.ai' },
   },
   bus: {
     title: 'Core Avionics & Bus',
