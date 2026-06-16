@@ -346,14 +346,18 @@ export function Constellation() {
       // Low power mode entry and recovery
       if (charge <= 0.0 && !s.lowPower) {
         s.lowPower = true;
-        toast(`⚠ BATTERY DEPLETED — SAT-${i} ENTERING LOW POWER MODE`);
+        if (st.selectedIdx === i) {
+          toast(`⚠ BATTERY DEPLETED — SAT-${i} ENTERING LOW POWER MODE`);
+        }
         // Rebuild links
         const { pairs, adj } = buildLinks(sats);
         network.pairs = pairs;
         network.adj = adj;
       } else if (charge >= 0.2 && s.lowPower) {
         s.lowPower = false;
-        toast(`🔋 BATTERY RECOVERY — SAT-${i} POWER CYCLE COMPLETED`);
+        if (st.selectedIdx === i) {
+          toast(`🔋 BATTERY RECOVERY — SAT-${i} POWER CYCLE COMPLETED`);
+        }
         // Rebuild links
         const { pairs, adj } = buildLinks(sats);
         network.pairs = pairs;
