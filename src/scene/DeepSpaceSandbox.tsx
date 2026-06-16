@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Html } from '@react-three/drei';
+import { Html, useTexture } from '@react-three/drei';
 import { NOMINAL_WARP } from '../lib/constants';
 import { telemetry } from '../state/telemetry';
 import { useSimStore } from '../state/sim';
@@ -68,7 +68,7 @@ type ActiveThreat = {
 export function DeepSpaceSandbox() {
   const [threat, setThreat] = useState<ActiveThreat | null>(null);
   const [laserActive, setLaserActive] = useState(false);
-
+  const starshipSpaceTex = useTexture('/textures/starship/starship-space.png');
 
   // References for animating the Lagrange points
   const emL1Ref = useRef<THREE.Group>(null);
@@ -529,10 +529,33 @@ export function DeepSpaceSandbox() {
             <cylinderGeometry args={[2.5, 2.5, 12, 16]} />
             <meshStandardMaterial color="#b8bcc4" metalness={0.95} roughness={0.25} />
           </mesh>
+          {/* Heat shield tiles (dark half-cylinder) */}
+          <mesh position={[0, 2.5, 0]}>
+            <cylinderGeometry args={[2.55, 2.55, 12, 16, 1, true, 0, Math.PI]} />
+            <meshStandardMaterial color="#0a0a0c" metalness={0.2} roughness={0.85} side={THREE.DoubleSide} />
+          </mesh>
           <mesh position={[0, 10.5, 0]}>
             <coneGeometry args={[2.5, 4.5, 16]} />
             <meshStandardMaterial color="#b8bcc4" metalness={0.95} roughness={0.25} />
           </mesh>
+          {/* Forward flaps */}
+          {([1.8, -1.8] as const).map((z) => (
+            <mesh key={`ff${z}`} position={[0, 9.5, z]}>
+              <boxGeometry args={[1.8, 1.2, 0.15]} />
+              <meshStandardMaterial color="#9aa0a8" metalness={0.8} roughness={0.4} />
+            </mesh>
+          ))}
+          {/* Aft flaps */}
+          {([2.2, -2.2] as const).map((z) => (
+            <mesh key={`af${z}`} position={[0, -1.5, z]}>
+              <boxGeometry args={[2.6, 2.0, 0.15]} />
+              <meshStandardMaterial color="#9aa0a8" metalness={0.8} roughness={0.4} />
+            </mesh>
+          ))}
+          {/* Starship billboard photo (visible at close range) */}
+          <sprite position={[6, 6, 0]} scale={[8, 8, 1]}>
+            <spriteMaterial map={starshipSpaceTex} transparent opacity={0.85} depthWrite={false} />
+          </sprite>
           {/* Engine Plume */}
           <mesh ref={(el) => { shipPlumeRefs.current[idx] = el; }} position={[0, -5, 0]} rotation={[Math.PI, 0, 0]}>
             <coneGeometry args={[1.8, 8, 16, 1, true]} />

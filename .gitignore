@@ -22,6 +22,8 @@ public/textures/*
 !public/textures/manifest.json
 !public/textures/*-low.jpg
 !public/textures/*-low.png
+!public/textures/starship/
+!public/textures/starship/*
 
 # Generated OpenGraph placeholder
 public/og.png
