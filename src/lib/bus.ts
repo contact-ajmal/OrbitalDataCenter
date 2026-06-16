@@ -15,6 +15,8 @@ export type BusEvents = {
   snapshot: number;
   /** Trigger an ASAT kinetic strike on a specific satellite index */
   'asat:trigger': number;
+  /** Trigger an incoming deep space meteorite / debris threat targeting bases */
+  'deepspace:threat': boolean;
 };
 
 type Handler<E extends keyof BusEvents> = (payload: BusEvents[E]) => void;

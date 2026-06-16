@@ -125,7 +125,8 @@ export function Mars() {
           float dif = dot(n, uSun);
           float day = smoothstep(-0.15, 0.15, dif);
           vec3 dayTex = texture2D(uMap, vUv).rgb;
-          vec3 dayCol = dayTex * (0.05 + 1.35 * max(dif, 0.0));
+          // High contrast shading (bright ambient base to keep features clearly visible)
+          vec3 dayCol = dayTex * (0.40 + 1.55 * max(dif, 0.0));
           
           // Sunset terminator band (orange sunset)
           float band = exp(-(dif * dif) / (2.0 * 0.15 * 0.15));
@@ -307,61 +308,116 @@ export function Mars() {
               <meshStandardMaterial color="#a64b2a" roughness={0.9} metalness={0.1} />
             )}
 
-            {/* Olympus Comm-Terminal Dome and Infrastructure on surface */}
+            {/* Olympus Colony */}
             <group position={[-MARS_RADIUS, 0, 0]}>
               {/* Central Dome */}
               <mesh ref={domeRef} rotation={[0, 0, Math.PI / 2]}>
-                <sphereGeometry args={[MARS_RADIUS * 0.08, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-                <meshBasicMaterial color="#ff5533" transparent opacity={0.85} />
+                <sphereGeometry args={[MARS_RADIUS * 0.10, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+                <meshBasicMaterial color="#ff5533" transparent opacity={0.8} />
               </mesh>
               <mesh rotation={[-Math.PI / 2, 0, 0]}>
-                <ringGeometry args={[0, MARS_RADIUS * 0.12, 32]} />
+                <ringGeometry args={[0, MARS_RADIUS * 0.15, 32]} />
                 <meshBasicMaterial color="#ef4444" transparent opacity={0.3} depthWrite={false} />
               </mesh>
 
-              {/* Solar array wing 1 */}
-              <group position={[0.5, 0, -2.5]} rotation={[0, 0.5, Math.PI / 2]}>
-                <mesh position={[0, MARS_RADIUS * 0.02, 0]}>
-                  <cylinderGeometry args={[MARS_RADIUS * 0.004, MARS_RADIUS * 0.004, MARS_RADIUS * 0.05, 8]} />
-                  <meshStandardMaterial color="#334155" />
+              {/* Glowing Vacuum Transit Tubes (connecting the colony structures) */}
+              {/* Dome to Starship Launch Pad */}
+              <mesh position={[2.0, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[MARS_RADIUS * 0.015, MARS_RADIUS * 0.015, 4.0, 8]} />
+                <meshStandardMaterial color="#ff5533" transparent opacity={0.45} roughness={0.1} metalness={0.9} />
+              </mesh>
+              <mesh position={[2.0, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[MARS_RADIUS * 0.003, MARS_RADIUS * 0.003, 4.0, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+
+              {/* Dome to Green Biodome */}
+              <mesh position={[0, 0.02, -2.5]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[MARS_RADIUS * 0.015, MARS_RADIUS * 0.015, 5.0, 8]} />
+                <meshStandardMaterial color="#ff5533" transparent opacity={0.45} roughness={0.1} metalness={0.9} />
+              </mesh>
+              <mesh position={[0, 0.02, -2.5]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[MARS_RADIUS * 0.003, MARS_RADIUS * 0.003, 5.0, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+
+              {/* Dome to Power Hub */}
+              <mesh position={[-1.75, 0.02, 1.75]} rotation={[0, Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MARS_RADIUS * 0.015, MARS_RADIUS * 0.015, 5.0, 8]} />
+                <meshStandardMaterial color="#ff5533" transparent opacity={0.45} roughness={0.1} metalness={0.9} />
+              </mesh>
+              <mesh position={[-1.75, 0.02, 1.75]} rotation={[0, Math.PI / 4, Math.PI / 2]}>
+                <cylinderGeometry args={[MARS_RADIUS * 0.003, MARS_RADIUS * 0.003, 5.0, 8]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+
+              {/* Green Agricultural Biodome */}
+              <group position={[0, 0, -5.0]}>
+                <mesh rotation={[0, 0, Math.PI / 2]}>
+                  <sphereGeometry args={[MARS_RADIUS * 0.08, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+                  <meshStandardMaterial color="#10b981" transparent opacity={0.5} roughness={0.1} metalness={0.9} />
                 </mesh>
-                <mesh position={[0, MARS_RADIUS * 0.045, 0]} rotation={[0.4, 0, 0]}>
-                  <boxGeometry args={[MARS_RADIUS * 0.04, MARS_RADIUS * 0.002, MARS_RADIUS * 0.025]} />
-                  <meshStandardMaterial color="#1b2a47" metalness={0.9} roughness={0.1} />
+                <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                  <ringGeometry args={[0, MARS_RADIUS * 0.12, 32]} />
+                  <meshBasicMaterial color="#059669" transparent opacity={0.25} depthWrite={false} />
                 </mesh>
+                <Html distanceFactor={45} center position={[0, MARS_RADIUS * 0.11, 0]}>
+                  <div className="pointer-events-none whitespace-nowrap rounded border border-emerald-500 bg-black/85 px-1.5 py-0.5 text-[5px] font-bold uppercase tracking-wider text-emerald-400">
+                    🌿 Mars Agro-Dome
+                  </div>
+                </Html>
               </group>
 
-              {/* Solar array wing 2 */}
-              <group position={[0.5, 0, 2.5]} rotation={[0, -0.5, Math.PI / 2]}>
-                <mesh position={[0, MARS_RADIUS * 0.02, 0]}>
-                  <cylinderGeometry args={[MARS_RADIUS * 0.004, MARS_RADIUS * 0.004, MARS_RADIUS * 0.05, 8]} />
-                  <meshStandardMaterial color="#334155" />
+              {/* SpaceX Landing Pad & Parked Starship */}
+              <group position={[4.0, 0, 0]}>
+                {/* Landing Pad */}
+                <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                  <ringGeometry args={[0, MARS_RADIUS * 0.09, 32]} />
+                  <meshBasicMaterial color="#374151" transparent opacity={0.65} />
                 </mesh>
-                <mesh position={[0, MARS_RADIUS * 0.045, 0]} rotation={[0.4, 0, 0]}>
-                  <boxGeometry args={[MARS_RADIUS * 0.04, MARS_RADIUS * 0.002, MARS_RADIUS * 0.025]} />
-                  <meshStandardMaterial color="#1b2a47" metalness={0.9} roughness={0.1} />
-                </mesh>
+                {/* Parked Cargo Starship (aligned with tangent) */}
+                <group position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                  <mesh position={[0, MARS_RADIUS * 0.07, 0]}>
+                    <cylinderGeometry args={[MARS_RADIUS * 0.015, MARS_RADIUS * 0.015, MARS_RADIUS * 0.14, 16]} />
+                    <meshStandardMaterial metalness={0.9} roughness={0.15} color="#e2e8f0" />
+                  </mesh>
+                  <mesh position={[0, MARS_RADIUS * 0.165, 0]}>
+                    <coneGeometry args={[MARS_RADIUS * 0.015, MARS_RADIUS * 0.05, 16]} />
+                    <meshStandardMaterial metalness={0.9} roughness={0.15} color="#e2e8f0" />
+                  </mesh>
+                  {/* Landing legs */}
+                  <mesh position={[0, MARS_RADIUS * 0.005, 0]} rotation={[0, Math.PI / 4, 0]}>
+                    <cylinderGeometry args={[MARS_RADIUS * 0.022, MARS_RADIUS * 0.026, MARS_RADIUS * 0.015, 4, 1, true]} />
+                    <meshStandardMaterial color="#4b5563" metalness={0.8} />
+                  </mesh>
+                </group>
+                <Html distanceFactor={45} center position={[0, MARS_RADIUS * 0.22, 0]}>
+                  <div className="pointer-events-none whitespace-nowrap rounded border border-slate-500 bg-black/85 px-1.5 py-0.5 text-[5px] font-bold uppercase tracking-wider text-slate-300">
+                    🚀 Starship Ares-I
+                  </div>
+                </Html>
               </group>
 
-              {/* Rotating Comm Dish */}
-              <group position={[-1.2, 0, -1.2]} rotation={[0, 0, Math.PI / 2]} ref={dishRef}>
-                <mesh position={[0, MARS_RADIUS * 0.02, 0]}>
-                  <cylinderGeometry args={[MARS_RADIUS * 0.005, MARS_RADIUS * 0.005, MARS_RADIUS * 0.04, 8]} />
-                  <meshStandardMaterial color="#475569" metalness={0.7} />
+              {/* Power Hub & Solar Panels */}
+              <group position={[-3.5, 0, 3.5]}>
+                <mesh rotation={[0, 0, Math.PI / 2]}>
+                  <boxGeometry args={[MARS_RADIUS * 0.05, MARS_RADIUS * 0.05, MARS_RADIUS * 0.05]} />
+                  <meshStandardMaterial color="#4b5563" roughness={0.4} />
                 </mesh>
-                <mesh position={[0, MARS_RADIUS * 0.04, 0]} rotation={[0.5, 0, 0]}>
-                  <coneGeometry args={[MARS_RADIUS * 0.035, MARS_RADIUS * 0.012, 16, 1, true]} />
-                  <meshStandardMaterial color="#ef4444" metalness={0.8} roughness={0.3} side={THREE.DoubleSide} />
+                <mesh position={[0, MARS_RADIUS * 0.035, 0]} rotation={[0, 0, Math.PI / 2]}>
+                  <boxGeometry args={[MARS_RADIUS * 0.045, MARS_RADIUS * 0.01, MARS_RADIUS * 0.045]} />
+                  <meshBasicMaterial color="#f59e0b" />
                 </mesh>
-                <mesh position={[0, MARS_RADIUS * 0.05, 0.005]} rotation={[0.5, 0, 0]}>
-                  <sphereGeometry args={[MARS_RADIUS * 0.006, 8, 8]} />
-                  <meshBasicMaterial color="#ffffff" />
-                </mesh>
+                <Html distanceFactor={45} center position={[0, MARS_RADIUS * 0.08, 0]}>
+                  <div className="pointer-events-none whitespace-nowrap rounded border border-amber-500 bg-black/85 px-1.5 py-0.5 text-[5px] font-bold uppercase tracking-wider text-amber-400">
+                    ⚡ Solar Grid Hub
+                  </div>
+                </Html>
               </group>
 
               <Html distanceFactor={60} center position={[0, MARS_RADIUS * 0.15, 0]}>
                 <div className="pointer-events-none whitespace-nowrap rounded-sm border border-red-500 bg-black/90 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[.15em] text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
-                  🔴 Olympus Comm-Terminal
+                  🔴 Olympus Colony
                 </div>
               </Html>
             </group>

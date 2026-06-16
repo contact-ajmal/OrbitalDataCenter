@@ -29,6 +29,7 @@ import { ReentryTrails } from './ReentryTrails';
 import { LunarRelay } from './LunarRelay';
 import { RadiationBelt } from './RadiationBelt';
 import { Mars } from './Mars';
+import { DeepSpaceSandbox } from './DeepSpaceSandbox';
 
 /**
  * Root scene composition. The world (Sky/Sun/Moon/Earth), the fleet, the laser
@@ -73,6 +74,7 @@ export function Scene() {
       <LunarRelay />
       <Mars />
       <RadiationBelt />
+      <DeepSpaceSandbox />
     </>
   );
 }

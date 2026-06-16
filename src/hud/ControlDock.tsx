@@ -361,6 +361,13 @@ export function ControlDock() {
                 >
                   💥 ASAT Kinetic Strike
                 </button>
+                <button
+                  onClick={() => emit('deepspace:threat', true)}
+                  className="pointer-events-auto rounded border border-white/15 px-3 py-1.5 text-[9px] uppercase tracking-[.18em] text-dim transition-colors cursor-pointer hover:bg-white/10 hover:text-ink"
+                  title="Simulate incoming Keplerian debris threat targeting Moon/Mars outposts and trigger base intercept grids"
+                >
+                  💥 Outpost Defense
+                </button>
               </div>
             </div>
 

@@ -124,8 +124,8 @@ function Moon() {
           float day = smoothstep(-0.02, 0.05, dif);
           vec3 dayTex = texture2D(uMap, vUv).rgb;
           
-          // High contrast shading (extreme sharp terminator)
-          vec3 dayCol = dayTex * (0.02 + 1.25 * max(dif, 0.0));
+          // High contrast shading (bright ambient base to keep features clearly visible)
+          vec3 dayCol = dayTex * (0.35 + 1.45 * max(dif, 0.0));
           
           // 2) Procedural night-side lunar colony lights (sleek violet-purple network)
           float grid = step(0.988, fract(vUv.x * 240.0)) * step(0.965, sin(vUv.y * 360.0));
@@ -443,10 +443,10 @@ function Moon() {
 export function SunMoon() {
   return (
     <>
-      <ambientLight color={SCENE_COLORS.ambient} intensity={1} />
+      <ambientLight color={SCENE_COLORS.ambient} intensity={1.8} />
       <directionalLight
         position={LIGHT_POS}
-        intensity={2}
+        intensity={3.2}
         color={SCENE_COLORS.sunLight}
       />
       <SunGlow />

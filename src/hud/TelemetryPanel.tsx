@@ -134,6 +134,46 @@ export function TelemetryPanel() {
         )}
       </div>
 
+      {/* Interplanetary Latency & Deep-Space Network Status */}
+      <div className="mt-2 border-t border-white/8 pt-2">
+        <div className="text-[7.5px] uppercase tracking-[.15em] text-faint mb-1.5">Deep Space Telemetry</div>
+        <Stat
+          label="Moon Link"
+          value="CONNECTED"
+          unit=""
+          accent="text-violet-400"
+        />
+        <Stat
+          label="Moon One-Way Latency"
+          value="1.28"
+          unit="s"
+        />
+        <Stat
+          label="Mars Link"
+          value="CONNECTED"
+          unit=""
+          accent="text-orange-400"
+        />
+        <Stat
+          label="Mars One-Way Latency"
+          value={(() => {
+            const t = Date.now() * 0.00001;
+            const dist = 54.6 + (401.0 - 54.6) * (0.5 + 0.5 * Math.sin(t));
+            const delaySec = (dist * 1e6) / 299792;
+            const mins = Math.floor(delaySec / 60);
+            const secs = Math.floor(delaySec % 60);
+            return `${mins}m ${secs.toString().padStart(2, '0')}`;
+          })()}
+          unit=""
+        />
+        <Stat
+          label="Lagrange Relays"
+          value="3 ACTIVE"
+          unit=""
+          accent="text-amber-400"
+        />
+      </div>
+
       <div className="mt-2 border-t border-white/8 pt-2">
         <Bar label="Solar capture" value={s.sunlitFrac} color="var(--color-solar)" />
         <Bar label="Heat rejection" value={heat} color="var(--color-ok)" />
