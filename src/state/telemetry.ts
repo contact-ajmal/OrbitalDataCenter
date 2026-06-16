@@ -35,4 +35,8 @@ export const telemetry = {
     arr.fill(-1);
     return arr;
   })(),
+  /** The satellite index currently acting as the active Lunar Deep-Space Relay. */
+  lunarRelayIdx: -1,
+  /** 1 = inside the high-radiation Van Allen / SAA zone. */
+  satRadiation: new Uint8Array(SCENE.MAX_SATS),
 };

@@ -25,6 +25,8 @@ type Card = {
   burned: boolean;
   downlinkStation: number;
   stationWeather: 'clear' | 'cloudy' | null;
+  lunarRelay: boolean;
+  radiationZone: boolean;
 };
 
 function read(i: number): Card | null {
@@ -45,6 +47,9 @@ function read(i: number): Card | null {
     stationWeather = isCloudy ? 'cloudy' : 'clear';
   }
 
+  const lunarRelay = telemetry.lunarRelayIdx === i;
+  const radiationZone = telemetry.satRadiation[i] === 1;
+
   return {
     plane: sat?.plane ?? 0,
     slot: sat?.slot ?? 0,
@@ -58,6 +63,8 @@ function read(i: number): Card | null {
     burned: !!sat?.burned,
     downlinkStation,
     stationWeather,
+    lunarRelay,
+    radiationZone,
   };
 }
 
@@ -190,6 +197,20 @@ export function SatCard() {
         </span>
       </div>
       <Stat label="ISL links" value={card.links} />
+      {card.lunarRelay && (
+        <Stat
+          label="Deep-Space Relay"
+          value="ACTIVE"
+          accent="text-violet-400 font-bold"
+        />
+      )}
+      {card.radiationZone && (
+        <Stat
+          label="Radiation Belt"
+          value="DANGEROUS (ECC Active)"
+          accent="text-fuchsia-400 font-bold animate-pulse"
+        />
+      )}
       {card.downlinkStation >= 0 && (
         <Stat
           label={card.stationWeather === 'cloudy' ? 'Uplink (Cloudy)' : 'Uplink (Clear)'}

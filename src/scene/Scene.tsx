@@ -26,6 +26,8 @@ import { TrafficPackets } from './TrafficPackets';
 import { StormWind } from './StormWind';
 import { HeatmapOverlay } from './HeatmapOverlay';
 import { ReentryTrails } from './ReentryTrails';
+import { LunarRelay } from './LunarRelay';
+import { RadiationBelt } from './RadiationBelt';
 
 /**
  * Root scene composition. The world (Sky/Sun/Moon/Earth), the fleet, the laser
@@ -67,6 +69,8 @@ export function Scene() {
       <StormWind />
       <HeatmapOverlay />
       <ReentryTrails />
+      <LunarRelay />
+      <RadiationBelt />
     </>
   );
 }

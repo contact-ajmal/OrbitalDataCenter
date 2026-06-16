@@ -29,16 +29,18 @@ export function Lasers() {
   const lineGeo = useMemo(() => {
     const geo = new BufferGeometry();
     const pos = new Float32Array(LINK_CAP * 2 * 3);
+    const col = new Float32Array(LINK_CAP * 2 * 3);
     geo.setAttribute('position', new BufferAttribute(pos, 3));
+    geo.setAttribute('color', new BufferAttribute(col, 3));
     geo.setDrawRange(0, 0);
     return geo;
   }, []);
   const lineMat = useMemo(
     () =>
       new LineBasicMaterial({
-        color: SCENE_COLORS.laser,
+        vertexColors: true,
         transparent: true,
-        opacity: 0.32,
+        opacity: 0.45,
         blending: AdditiveBlending,
         depthWrite: false,
       }),
@@ -89,22 +91,50 @@ export function Lasers() {
     const lines = linesRef.current;
     if (lines) {
       const posAttr = lines.geometry.getAttribute('position') as BufferAttribute;
+      const colAttr = lines.geometry.getAttribute('color') as BufferAttribute;
       const arr = posAttr.array as Float32Array;
+      const colArr = colAttr.array as Float32Array;
       const drawn = Math.min(np, LINK_CAP);
+      const rad = telemetry.satRadiation;
+
       for (let k = 0; k < drawn; k++) {
         const pair = pairs[k]!;
-        const a = pair[0] * 3;
-        const b = pair[1] * 3;
+        const idxA = pair[0];
+        const idxB = pair[1];
+        const a = idxA * 3;
+        const b = idxB * 3;
         const o = k * 6;
+
         arr[o + 0] = sw[a]!;
         arr[o + 1] = sw[a + 1]!;
         arr[o + 2] = sw[a + 2]!;
         arr[o + 3] = sw[b]!;
         arr[o + 4] = sw[b + 1]!;
         arr[o + 5] = sw[b + 2]!;
+
+        // Radiation exposure causes purple/magenta flickering cross-talk
+        const inRad = rad[idxA] === 1 || rad[idxB] === 1;
+        let r = 0.32;
+        let g = 0.84;
+        let bVal = 1.0;
+
+        if (inRad) {
+          const f = 0.25 + 0.75 * Math.random();
+          r = 0.95 * f;
+          g = 0.1 * f;
+          bVal = 0.9 * f;
+        }
+
+        colArr[o + 0] = r;
+        colArr[o + 1] = g;
+        colArr[o + 2] = bVal;
+        colArr[o + 3] = r;
+        colArr[o + 4] = g;
+        colArr[o + 5] = bVal;
       }
       lines.geometry.setDrawRange(0, drawn * 2);
       posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
     }
 
     // advance + place pulses (frozen under pause)
