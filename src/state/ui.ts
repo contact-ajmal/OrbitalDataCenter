@@ -21,11 +21,11 @@ type UiState = {
   setHoveredComponent: (c: SystemKey | null) => void;
   
   // Category tabs & weather/ADCS states
-  activeTab: 'networks' | 'fleet' | 'compute' | 'hazards' | 'system';
+  activeTab: 'networks' | 'fleet' | 'compute' | 'hazards' | 'system' | 'help';
   weatherSim: boolean;
   adcsActive: boolean;
   weatherStates: ('clear' | 'cloudy')[];
-  setActiveTab: (t: 'networks' | 'fleet' | 'compute' | 'hazards' | 'system') => void;
+  setActiveTab: (t: 'networks' | 'fleet' | 'compute' | 'hazards' | 'system' | 'help') => void;
   setWeatherSim: (v: boolean) => void;
   setAdcsActive: (v: boolean) => void;
   setWeatherStates: (s: ('clear' | 'cloudy')[]) => void;

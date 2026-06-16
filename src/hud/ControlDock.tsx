@@ -446,12 +446,162 @@ export function ControlDock() {
             </div>
           </div>
         )}
+
+        {activeTab === 'help' && (
+          <div className="flex flex-col gap-3.5 w-full text-[11px] leading-relaxed text-dim max-h-[45vh] overflow-y-auto pr-1">
+            <div className="border-b border-white/10 pb-2 flex justify-between items-start">
+              <div>
+                <span className="text-[12px] font-bold text-laser tracking-[.06em]">ORBITAL DATACENTER OPERATOR MANUAL</span>
+                <p className="text-[10px] text-faint mt-0.5">Real-time R3F constellation telemetry sandbox control system.</p>
+              </div>
+            </div>
+
+            {/* Feature 1 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">📡 Lunar Deep-Space Relay</span>
+              <p>
+                Calculates the Moon's real-time orbital position. Telemetry checks line-of-sight to elect the optimal relay satellite, drawing a bright violet optical beam with a floating 3D label.
+              </p>
+              <div className="flex gap-2.5 mt-0.5">
+                <button
+                  onClick={() => {
+                    setViewMode('inspect');
+                    toast('ENTERED INSPECT MODE — CHOOSE A SATELLITE');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Inspect Mode]
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">🧲 Van Allen Radiation Belt</span>
+              <p>
+                Volumetric toroidal high-radiation field surrounding the Earth. Satellites passing through experience Single Event Upsets (SEU), causing their lasers to flicker magenta/purple.
+              </p>
+              <div className="flex gap-2.5 mt-0.5">
+                <button
+                  onClick={() => {
+                    setViewMode('chase');
+                    toast('CHASE VIEW ENABLED — OBSERVE ORBITS');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Chase Mode]
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">🛡 Deflector Shield Generator</span>
+              <p>
+                Launches magnetospheric shields around the constellation. Shielded satellites absorb cosmic radiation and solar storms, eliminating SEU laser flickering and maintaining 100% packet integrity.
+              </p>
+              <div className="flex gap-2.5 mt-0.5">
+                <button
+                  onClick={() => {
+                    toggleShield();
+                    toast(!shieldActive ? '🛡 Shield Generator Online' : '🛡 Shield Generator Offline');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  {shieldActive ? '[Deactivate Shield]' : '[Activate Shield]'}
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">🔑 QKD Quantum Encryption</span>
+              <p>
+                Upgrades the optical laser mesh network to secure, quantum-entangled emerald green channels. Quantum encryption stabilizes links and doubles packet velocities (2.0x throughput).
+              </p>
+              <div className="flex gap-2.5 mt-0.5">
+                <button
+                  onClick={() => {
+                    toggleQkd();
+                    toast(!qkdActive ? '🔑 QKD Encryption Active' : '🔑 QKD Encryption Inactive');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  {qkdActive ? '[Standard Lasers]' : '[Encrypt QKD mesh]'}
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">🌐 Global Traffic & Workloads</span>
+              <p>
+                Simulates live packet routing across the mesh between major ground hubs (Bastrop, York, Tokyo, Sydney) and visualizes local city compute demands via pulsing atmospheric beacons.
+              </p>
+              <div className="flex gap-3 mt-0.5">
+                <button
+                  onClick={() => {
+                    toggle('traffic');
+                    toast('Toggled network traffic flows');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Toggle Traffic]
+                </button>
+                <button
+                  onClick={() => {
+                    toggle('heatmap');
+                    toast('Toggled workload heatmap');
+                  }}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Toggle Heatmap]
+                </button>
+              </div>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="flex flex-col gap-1 border-b border-white/5 pb-2">
+              <span className="font-bold text-ink flex items-center gap-1.5">☀ Space Hazards & Debris Sandbox</span>
+              <p>
+                Trigger simulated space weather storms, track debris conjunction warnings, or launch an ASAT rocket missile from Starbase, TX to obliterate any satellite and generate a Keplerian-drifting debris ring.
+              </p>
+              <div className="flex gap-3 mt-0.5">
+                <button
+                  onClick={triggerStorm}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Trigger Storm]
+                </button>
+                <button
+                  onClick={() => triggerConjunction(telemetry.simT)}
+                  className="text-laser hover:underline cursor-pointer font-bold text-[9px] uppercase tracking-wider"
+                >
+                  [Trigger Conjunction]
+                </button>
+              </div>
+            </div>
+            
+            {/* Quick Links section */}
+            <div className="bg-white/3 p-2.5 rounded border border-white/8">
+              <span className="font-bold text-ink uppercase tracking-wider text-[9px] block mb-1">🎮 Operator Keyboard Shortcuts</span>
+              <div className="grid grid-cols-2 gap-y-1 text-[10px] font-mono text-faint">
+                <div><span className="text-laser">Space</span> - Pause/Resume</div>
+                <div><span className="text-laser">R</span> - Reset View</div>
+                <div><span className="text-laser">1 / 2 / 3</span> - Camera Views</div>
+                <div><span className="text-laser">L</span> - Launch Starship</div>
+                <div><span className="text-laser">J</span> - Run AI Job</div>
+                <div><span className="text-laser">T</span> - Cinematic Tour</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       )}
 
       {/* 2. Category Tab Selector Bar */}
       <div className={`flex justify-between items-center w-full gap-2 ${expanded ? 'border-t border-white/8 pt-2' : ''}`}>
-        {(['networks', 'fleet', 'compute', 'hazards', 'system'] as const).map((tab) => (
+        {(['networks', 'fleet', 'compute', 'hazards', 'system', 'help'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => handleTabClick(tab)}
