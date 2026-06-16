@@ -57,20 +57,21 @@ function startAmbient() {
   if (ambient || !ctx || !master) return;
   const c = ctx;
 
-  // Create a filter for the synth pad to make it warm, light, and soft
+  // Create a resonant lowpass filter for the synth pad to make it warm, thick, and cinematic
   const padFilter = c.createBiquadFilter();
   padFilter.type = 'lowpass';
-  padFilter.frequency.value = 650; // raised cutoff for light, airy tones
+  padFilter.frequency.value = 320; // low cutoff for a warm analog tone
+  padFilter.Q.value = 2.2; // resonance adds a sweeping synthesizer string character
   padFilter.connect(master);
 
   // Set up the feedback delay nodes for rich, spacious, reverb-like space ambient echo
   const delay = c.createDelay(2.0);
-  delay.delayTime.value = 1.0; // 1-second delay for a spacious celestial echo tail
+  delay.delayTime.value = 1.0; // 1-second delay for a spacious cinematic echo tail
   const delayGain = c.createGain();
-  delayGain.gain.value = 0.40; // feedback echo volume
+  delayGain.gain.value = 0.38; // feedback echo volume
   const delayFilter = c.createBiquadFilter();
   delayFilter.type = 'lowpass';
-  delayFilter.frequency.value = 750; // filters echo high frequencies slightly to keep them warm
+  delayFilter.frequency.value = 480; // filters echo high frequencies slightly to keep them warm
 
   padFilter.connect(delay);
   delay.connect(delayFilter);
@@ -78,28 +79,26 @@ function startAmbient() {
   delayGain.connect(delay); // feedback loop
   delayGain.connect(master);
 
-  // Slowly modulate filter cutoff with an LFO for light movement
+  // Slowly modulate filter cutoff with an LFO for sweeping movements (analog synthesizer feel)
   const lfo = c.createOscillator();
-  lfo.frequency.value = 0.025; // slow 40s sweep
+  lfo.frequency.value = 0.02; // slow 50s sweep
   const lfoGain = c.createGain();
-  lfoGain.gain.value = 150; // sweep between 500Hz and 800Hz
+  lfoGain.gain.value = 120; // sweep between 200Hz and 440Hz
   lfo.connect(lfoGain);
   lfoGain.connect(padFilter.frequency);
   lfo.start();
 
-  let activeNotes: { osc: OscillatorNode; gain: GainNode }[] = [];
+  let activeNotes: { oscs: OscillatorNode[]; gain: GainNode }[] = [];
 
   const chords = [
-    // Dbmaj9 (transposed up 1 octave): Db3, Ab3, F4, C5, Eb5 (airy, crystal)
+    // Dbmaj9 (cinematic wide voicing): Db3, Ab3, F4, C5, Eb5
     [138.59, 207.65, 349.23, 523.25, 622.25],
-    // Abadd9 (transposed up 1 octave): Ab3, Eb4, Bb4, C5, G5 (soothing, floating)
-    [207.65, 311.13, 466.16, 523.25, 783.99],
-    // Fm9 (transposed up 1 octave): F3, C4, Ab4, Eb5, G5 (peaceful space)
-    [174.61, 261.63, 415.30, 622.25, 783.99],
-    // Gbmaj9#11 (transposed up 1 octave): Gb3, Db4, F4, Bb4, C5, F5 (dreamy shimmer)
-    [185.00, 277.18, 349.23, 466.16, 523.25, 698.46],
-    // Bbm9 (transposed up 1 octave): Bb3, F4, Ab4, Db5, C6 (deep, pure resolution)
-    [233.08, 349.23, 415.30, 554.37, 1046.50]
+    // Bbm9 (melancholic swell): Bb2, F3, Db4, Ab4, C5
+    [116.54, 174.61, 277.18, 415.30, 523.25],
+    // Gbmaj7 (ethereal space): Gb2, Db3, Bb3, F4, Ab4
+    [92.50, 138.59, 233.08, 349.23, 415.30],
+    // Absus4 (hopeful resolution): Ab2, Eb3, Db4, Eb4, Bb4
+    [103.83, 155.56, 277.18, 311.13, 466.16]
   ];
   let currentChordIdx = 0;
 
@@ -108,15 +107,15 @@ function startAmbient() {
     const notes = chords[currentChordIdx]!;
     currentChordIdx = (currentChordIdx + 1) % chords.length;
 
-    // Cross-fade: slowly fade out old notes over 6 seconds
+    // Cross-fade: slowly fade out old notes over 6.5 seconds
     const oldNotes = activeNotes;
     activeNotes = [];
-    oldNotes.forEach(({ osc, gain }) => {
+    oldNotes.forEach(({ oscs, gain }) => {
       try {
         gain.gain.cancelScheduledValues(now);
         gain.gain.setValueAtTime(gain.gain.value, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 6.0);
-        osc.stop(now + 6.1);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 6.5);
+        oscs.forEach((osc) => osc.stop(now + 6.6));
       } catch {
         /* ignore */
       }
@@ -124,19 +123,28 @@ function startAmbient() {
 
     // Fade in new notes with organic staggered attack swells
     notes.forEach((freq, i) => {
-      const osc = c.createOscillator();
-      osc.type = 'sine'; // sine waves are pure, soft, and soothing (no humming/buzzing)
-      osc.frequency.value = freq + (Math.random() - 0.5) * 0.5; // organic detune for clean chorus effect
+      // Create two detuned sawtooth oscillators per note for a thick string ensemble effect
+      const osc1 = c.createOscillator();
+      const osc2 = c.createOscillator();
+      
+      osc1.type = 'sawtooth'; // sawtooth gives rich harmonics which sound like strings when filtered
+      osc2.type = 'sawtooth';
+      
+      osc1.frequency.value = freq - 0.7; // slight detuning for chorus/ensemble effect
+      osc2.frequency.value = freq + 0.7;
       
       const gain = c.createGain();
       gain.gain.setValueAtTime(0.0001, now);
-      const noteVol = 0.016 - (i * 0.0018); // very soft, ear-soothing volume levels
-      gain.gain.exponentialRampToValueAtTime(noteVol, now + 4.5 + i * 0.4); // slow, smooth attack swells
+      const noteVol = 0.010 - (i * 0.001); // very soft volume (sawtooth is louder than sine/triangle)
+      gain.gain.exponentialRampToValueAtTime(noteVol, now + 5.5 + i * 0.4); // slow 5.5s swells
 
-      osc.connect(gain);
+      osc1.connect(gain);
+      osc2.connect(gain);
       gain.connect(padFilter);
-      osc.start(now);
-      activeNotes.push({ osc, gain });
+      
+      osc1.start(now);
+      osc2.start(now);
+      activeNotes.push({ oscs: [osc1, osc2], gain });
     });
   };
 
@@ -151,12 +159,14 @@ function startAmbient() {
     } catch {
       /* ignore */
     }
-    activeNotes.forEach(({ osc }) => {
-      try {
-        osc.stop();
-      } catch {
-        /* ignore */
-      }
+    activeNotes.forEach(({ oscs }) => {
+      oscs.forEach((osc) => {
+        try {
+          osc.stop();
+        } catch {
+          /* ignore */
+        }
+      });
     });
   };
 }
