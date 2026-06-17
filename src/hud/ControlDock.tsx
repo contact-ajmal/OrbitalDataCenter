@@ -109,10 +109,36 @@ export function ControlDock() {
 
   return (
     <Panel
-      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[520px] transition-all duration-300 z-10 border-white/15 backdrop-blur-lg flex flex-col hud:bottom-9 hud:max-w-[640px] ${
-        expanded ? 'p-3.5 gap-3.5 max-h-[60vh] overflow-y-auto hud:max-h-none hud:overflow-visible' : 'p-2 gap-0 overflow-hidden'
+      className={`absolute left-1/2 -translate-x-1/2 bottom-16 w-[92vw] max-w-[520px] transition-all duration-300 z-10 border-white/15 backdrop-blur-lg flex flex-col hud:bottom-9 hud:max-w-[640px] p-3.5 ${
+        expanded ? 'gap-3.5 max-h-[60vh] overflow-y-auto hud:max-h-none hud:overflow-visible' : 'gap-2 overflow-hidden'
       } ${show ? 'flex' : 'hidden hud:flex'}`}
     >
+      {/* Always-visible Header Bar: Celestial Body Focus & Reset View Button */}
+      <div className="flex items-center justify-between w-full gap-2 pb-2.5 border-b border-white/8">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] uppercase font-bold tracking-wider text-dim">Focus:</span>
+          <Seg<ViewMode>
+            value={(viewMode === 'moon' || viewMode === 'mars') ? viewMode : 'overview'}
+            onChange={(v) => {
+              if (v === 'overview') setViewMode('overview');
+              else setViewMode(v);
+            }}
+            options={[
+              { label: '🌍 Earth', value: 'overview', title: 'Focus camera on Earth constellation' },
+              { label: '🌙 Moon', value: 'moon', title: 'Transit camera to Lunar Base' },
+              { label: '🔴 Mars', value: 'mars', title: 'Transit camera to Mars Olympus Terminal' },
+            ]}
+          />
+        </div>
+        <button
+          onClick={requestReset}
+          title="Reset viewport simulation settings to opening defaults"
+          className="pointer-events-auto rounded border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 px-2.5 py-1 text-[9px] uppercase tracking-[.18em] text-red-400 font-bold transition-colors cursor-pointer h-7 flex items-center gap-1.5"
+        >
+          <span>⟲</span> Reset View
+        </button>
+      </div>
+
       {/* 1. Tab Contents */}
       {expanded && (
         <div className="flex flex-wrap items-center justify-center gap-3 w-full min-h-[46px]">
@@ -213,21 +239,6 @@ export function ControlDock() {
                   setSatCount(v);
                 }}
                 display={satCount.toLocaleString('en-US')}
-              />
-            </div>
-            <div className="flex flex-col gap-1 shrink-0">
-              <Label>Celestial Body</Label>
-              <Seg<ViewMode>
-                value={(viewMode === 'moon' || viewMode === 'mars') ? viewMode : 'overview'}
-                onChange={(v) => {
-                  if (v === 'overview') setViewMode('overview');
-                  else setViewMode(v);
-                }}
-                options={[
-                  { label: '🌍 Earth', value: 'overview', title: 'Focus camera on Earth constellation' },
-                  { label: '🌙 Moon', value: 'moon', title: 'Transit camera to Lunar Base' },
-                  { label: '🔴 Mars', value: 'mars', title: 'Transit camera to Mars Olympus Terminal' },
-                ]}
               />
             </div>
             <div className="flex flex-col gap-1 shrink-0">
@@ -414,7 +425,6 @@ export function ControlDock() {
             <div className="flex flex-col gap-1 shrink-0">
               <Label>System Utilities</Label>
               <div className="flex flex-wrap gap-1">
-                <UtilBtn glyph="⟲" onClick={requestReset} title="Reset view (R)" />
                 <UtilBtn
                   glyph={paused ? '▶' : '⏸'}
                   on={paused}
